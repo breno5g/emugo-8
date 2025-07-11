@@ -87,6 +87,11 @@ func (c *Chip8) Execute(opcode uint16) {
 			c.op3XNN(opcode)
 		case 0x4000:
 			c.op4XNN(opcode)
+		case 0x5000:
+			if (opcode & consts.NMask) != 0 {
+				panic("Invalid opcode")
+			}
+			c.op5XY0(opcode)
 		}
 	}
 }
@@ -138,6 +143,15 @@ func (c *Chip8) op4XNN(opcode uint16) {
 	x := (opcode & consts.XMask) >> 8
 	nn := opcode & consts.NNask
 	if c.V[x] != byte(nn) {
+		c.PC += 2
+	}
+}
+
+// 5XY0 - SE Vx, Vy - Skip next instruction if Vx = Vy
+func (c *Chip8) op5XY0(opcode uint16) {
+	x := (opcode & consts.XMask) >> 8
+	y := (opcode & consts.YMask) >> 4
+	if c.V[x] == c.V[y] {
 		c.PC += 2
 	}
 }
