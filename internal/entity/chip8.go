@@ -46,3 +46,12 @@ func (c *Chip8) DebugScreen() {
 		fmt.Println()
 	}
 }
+
+func (c *Chip8) LoadROM(data []byte) {
+	const maxRomSize = consts.MemorySize - consts.StartAddress
+	if len(data) > maxRomSize {
+		panic("ROM too large")
+	}
+
+	copy(c.Memory[consts.StartAddress:], data[:])
+}
