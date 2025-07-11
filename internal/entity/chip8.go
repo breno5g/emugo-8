@@ -77,6 +77,7 @@ func (c *Chip8) Execute(opcode uint16) {
 		c.op00E0()
 	case 0x00EE:
 		c.op00EE()
+
 	default:
 		switch opcode & 0xF000 {
 		case 0x1000:
@@ -101,6 +102,8 @@ func (c *Chip8) Execute(opcode uint16) {
 			c.op9XY0(opcode)
 		case 0x2000:
 			c.op2NNN(opcode)
+		case 0xA000:
+			c.opANNN(opcode)
 		}
 	}
 }
@@ -114,7 +117,7 @@ func (c *Chip8) op00E0() {
 
 // 1NNN - JP addr - Jump to address NNN
 func (c *Chip8) op1NNN(opcode uint16) {
-	address := opcode & 0x0FFF
+	address := opcode & consts.NNNMask
 	c.PC = address
 }
 
@@ -176,7 +179,7 @@ func (c *Chip8) op9XY0(opcode uint16) {
 
 // 2NNN - CALL addr - Call subroutine at NNN
 func (c *Chip8) op2NNN(opcode uint16) {
-	address := opcode & 0x0FFF
+	address := opcode & consts.NNNMask
 	// push the current PC to the stack
 	c.Stack[c.SP] = c.PC
 	// increment the stack pointer
@@ -191,4 +194,10 @@ func (c *Chip8) op00EE() {
 	c.SP--
 	// set the PC to the address in the stack
 	c.PC = c.Stack[c.SP]
+}
+
+// ANNN - LD I, addr - Load I with NNN
+func (c *Chip8) opANNN(opcode uint16) {
+	addr := opcode & consts.NNNMask
+	c.I = addr
 }

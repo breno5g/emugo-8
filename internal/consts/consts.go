@@ -8,10 +8,14 @@ const (
 	DisplayWidth     = 64
 	DisplayHeight    = 32
 	DisplaySize      = DisplayWidth * DisplayHeight
-	XMask            = 0x0F00
-	YMask            = 0x00F0
-	NNask            = 0x00FF
-	NMask            = 0x000F
+)
+
+const (
+	XMask   = 0x0F00
+	YMask   = 0x00F0
+	NNask   = 0x00FF
+	NNNMask = 0x0FFF
+	NMask   = 0x000F
 )
 
 var FontSet = [80]byte{

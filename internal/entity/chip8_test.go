@@ -230,3 +230,13 @@ func TestOpcode00EE_RET(t *testing.T) {
 		t.Errorf("Expected SP = 0 after return, got %d", chip.SP)
 	}
 }
+
+func TestOpcodeANNN_LD(t *testing.T) {
+	chip := entity.NewChip8()
+
+	chip.Execute(0xA123)
+
+	if chip.I != 0x123 {
+		t.Errorf("Expected I = 0x123 after load, got 0x%04X", chip.I)
+	}
+}
