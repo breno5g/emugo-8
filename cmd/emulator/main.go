@@ -45,9 +45,16 @@ func main() {
 
 	// chip.DebugScreen()
 
+	// chip.LoadROM(consts.TestROM)
+	// opcode := chip.Fetch()
+	// fmt.Printf("opcode: 0x%04X\n", opcode)
+	// chip.Execute(opcode)
+	// fmt.Printf("PC: 0x%04X\n", chip.PC)
+
+	// 6XNN - LD Vx, byte - Load Vx with NN
 	chip.LoadROM(consts.TestROM)
 	opcode := chip.Fetch()
 	fmt.Printf("opcode: 0x%04X\n", opcode)
 	chip.Execute(opcode)
-	fmt.Printf("PC: 0x%04X\n", chip.PC)
+	fmt.Printf("V[0]: 0x%02X\n", chip.V[0])
 }

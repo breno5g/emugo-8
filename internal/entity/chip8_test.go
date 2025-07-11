@@ -80,3 +80,14 @@ func TestOpcode1NNN_Jump(t *testing.T) {
 		t.Errorf("JP falhou: esperado PC = 0x0234, obtido 0x%04X", chip.PC)
 	}
 }
+
+func TestOpcode6XNN_LD(t *testing.T) {
+	chip := entity.NewChip8()
+
+	// LD V5, 0xAB
+	chip.Execute(0x65AB)
+
+	if chip.V[5] != 0xAB {
+		t.Errorf("Esperado V5 = 0xAB, obtido 0x%02X", chip.V[5])
+	}
+}

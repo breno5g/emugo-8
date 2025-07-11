@@ -79,6 +79,8 @@ func (c *Chip8) Execute(opcode uint16) {
 		switch opcode & 0xF000 {
 		case 0x1000:
 			c.op1NNN(opcode)
+		case 0x6000:
+			c.op6XNN(opcode)
 		}
 	}
 }
@@ -93,6 +95,15 @@ func (c *Chip8) op00E0() {
 // 1NNN - JP addr - Jump to address NNN
 func (c *Chip8) op1NNN(opcode uint16) {
 	address := opcode & 0x0FFF
-	fmt.Printf("jumping to 0x%04X\n", address)
 	c.PC = address
+}
+
+// 6XNN - LD Vx, byte - Load Vx with NN
+func (c *Chip8) op6XNN(opcode uint16) {
+	// get the register
+	x := (opcode & 0x0F00) >> 8
+	// get the value
+	nn := opcode & 0x00FF
+	// load the value into the register
+	c.V[x] = byte(nn)
 }
