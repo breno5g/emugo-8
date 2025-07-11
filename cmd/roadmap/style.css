@@ -1,0 +1,40 @@
+body {
+  font-family: "Inter", sans-serif;
+  background-color: #fdfdfb;
+  color: #383838;
+}
+.nav-link {
+  transition: color 0.3s, border-bottom-color 0.3s;
+  border-bottom: 2px solid transparent;
+}
+.nav-link.active,
+.nav-link:hover {
+  color: #2563eb;
+  border-bottom-color: #2563eb;
+}
+.opcode-row:hover {
+  background-color: #eff6ff;
+}
+.tooltip {
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.has-tooltip:hover .tooltip {
+  visibility: visible;
+  opacity: 1;
+}
+.chart-container {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+  height: 300px;
+  max-height: 350px;
+}
+@media (min-width: 768px) {
+  .chart-container {
+    height: 350px;
+  }
+}
