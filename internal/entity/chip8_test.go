@@ -213,3 +213,20 @@ func TestOpcode2NNN_CALL(t *testing.T) {
 		t.Errorf("Expected Stack[0] = 0x200 after call, got 0x%04X", chip.Stack[0])
 	}
 }
+
+func TestOpcode00EE_RET(t *testing.T) {
+	chip := entity.NewChip8()
+	chip.PC = 0x200
+	chip.SP = 1
+	chip.Stack[0] = 0x100
+
+	chip.Execute(0x00EE)
+
+	if chip.PC != 0x100 {
+		t.Errorf("Expected PC = 0x100 after return, got 0x%04X", chip.PC)
+	}
+
+	if chip.SP != 0 {
+		t.Errorf("Expected SP = 0 after return, got %d", chip.SP)
+	}
+}

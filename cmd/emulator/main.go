@@ -93,7 +93,16 @@ func main() {
 	// fmt.Printf("PC after: 0x%04X\n", chip.PC)
 
 	// 2NNN - CALL addr - Call subroutine at NNN
-	chip.Execute(0x2200) // CALL 0x200
+	// chip.Execute(0x2200) // CALL 0x200
+	// fmt.Printf("PC: 0x%04X\n", chip.PC)
+	// fmt.Printf("SP: 0x%04X\n", chip.SP)
+	// fmt.Printf("Stack: %v\n", chip.Stack)
+
+	// 00EE - RET - Return from subroutine
+	chip.PC = 0x200
+	chip.SP = 1
+	chip.Stack[0] = 0x100
+	chip.Execute(0x00EE) // RET
 	fmt.Printf("PC: 0x%04X\n", chip.PC)
 	fmt.Printf("SP: 0x%04X\n", chip.SP)
 	fmt.Printf("Stack: %v\n", chip.Stack)

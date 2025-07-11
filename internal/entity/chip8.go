@@ -75,6 +75,8 @@ func (c *Chip8) Execute(opcode uint16) {
 	switch opcode {
 	case 0x00E0:
 		c.op00E0()
+	case 0x00EE:
+		c.op00EE()
 	default:
 		switch opcode & 0xF000 {
 		case 0x1000:
@@ -184,3 +186,9 @@ func (c *Chip8) op2NNN(opcode uint16) {
 }
 
 // 00EE - RET - Return from subroutine
+func (c *Chip8) op00EE() {
+	// decrement the stack pointer
+	c.SP--
+	// set the PC to the address in the stack
+	c.PC = c.Stack[c.SP]
+}
