@@ -35,8 +35,8 @@ func (c *Chip8) LoadFontSet() {
 }
 
 func (c *Chip8) DebugScreen() {
-	for y := 0; y < consts.DisplayHeight; y++ {
-		for x := 0; x < consts.DisplayWidth; x++ {
+	for y := range consts.DisplayHeight {
+		for x := range consts.DisplayWidth {
 			if c.Screen[y*consts.DisplayWidth+x] {
 				fmt.Print("⬜")
 			} else {
