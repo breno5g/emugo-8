@@ -81,6 +81,8 @@ func (c *Chip8) Execute(opcode uint16) {
 			c.op1NNN(opcode)
 		case 0x6000:
 			c.op6XNN(opcode)
+		case 0x7000:
+			c.op7XNN(opcode)
 		}
 	}
 }
@@ -106,4 +108,17 @@ func (c *Chip8) op6XNN(opcode uint16) {
 	nn := opcode & 0x00FF
 	// load the value into the register
 	c.V[x] = byte(nn)
+}
+
+// 7XNN - ADD Vx, byte - Add NN to Vx
+func (c *Chip8) op7XNN(opcode uint16) {
+	// get the register
+	x := (opcode & 0x0F00) >> 8
+	// get the value
+	nn := opcode & 0x00FF
+	// add the value to the register
+	fmt.Printf("V[%d]: 0x%02X\n", x, c.V[x])
+	fmt.Printf("NN: 0x%02X\n", nn)
+	fmt.Printf("Result: 0x%02X\n", c.V[x]+byte(nn))
+	c.V[x] += byte(nn)
 }

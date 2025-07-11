@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 
-	"github.com/breno5g/emugo-8/internal/consts"
 	"github.com/breno5g/emugo-8/internal/entity"
 )
 
@@ -52,9 +51,16 @@ func main() {
 	// fmt.Printf("PC: 0x%04X\n", chip.PC)
 
 	// 6XNN - LD Vx, byte - Load Vx with NN
-	chip.LoadROM(consts.TestROM)
-	opcode := chip.Fetch()
-	fmt.Printf("opcode: 0x%04X\n", opcode)
-	chip.Execute(opcode)
-	fmt.Printf("V[0]: 0x%02X\n", chip.V[0])
+	// chip.LoadROM(consts.TestROM)
+	// opcode := chip.Fetch()
+	// fmt.Printf("opcode: 0x%04X\n", opcode)
+	// chip.Execute(opcode)
+	// fmt.Printf("V[0]: 0x%02X\n", chip.V[0])
+
+	// 7XNN - ADD Vx, byte - Add NN to Vx
+	// LD V5, 0x10
+	chip.Execute(0x6510)
+	// ADD V5, 0x20
+	chip.Execute(0x7520)
+	fmt.Printf("V[5]: 0x%02X\n", chip.V[5])
 }

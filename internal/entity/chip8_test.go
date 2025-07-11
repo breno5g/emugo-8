@@ -77,7 +77,7 @@ func TestOpcode1NNN_Jump(t *testing.T) {
 	chip.Execute(0x1234)
 
 	if chip.PC != 0x0234 {
-		t.Errorf("JP falhou: esperado PC = 0x0234, obtido 0x%04X", chip.PC)
+		t.Errorf("Jump failed: expected PC = 0x0234, got 0x%04X", chip.PC)
 	}
 }
 
@@ -88,6 +88,19 @@ func TestOpcode6XNN_LD(t *testing.T) {
 	chip.Execute(0x65AB)
 
 	if chip.V[5] != 0xAB {
-		t.Errorf("Esperado V5 = 0xAB, obtido 0x%02X", chip.V[5])
+		t.Errorf("Expected V5 = 0xAB, got 0x%02X", chip.V[5])
+	}
+}
+
+func TestOpcode7XNN_ADD(t *testing.T) {
+	chip := entity.NewChip8()
+
+	// LD V5, 0x10
+	chip.Execute(0x6510)
+	// ADD V5, 0x20
+	chip.Execute(0x7520)
+
+	if chip.V[5] != 0x30 {
+		t.Errorf("Expected V5 = 0x30, got 0x%02X", chip.V[5])
 	}
 }
