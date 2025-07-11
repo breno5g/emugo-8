@@ -194,3 +194,22 @@ func TestOpcode9XY0_SNE(t *testing.T) {
 		t.Errorf("Expected PC = 0x200 after false comparison, got 0x%04X", chip.PC)
 	}
 }
+
+func TestOpcode2NNN_CALL(t *testing.T) {
+	chip := entity.NewChip8()
+	chip.PC = 0x200
+
+	chip.Execute(0x2300)
+
+	if chip.PC != 0x300 {
+		t.Errorf("Expected PC = 0x300 after call, got 0x%04X", chip.PC)
+	}
+
+	if chip.SP != 1 {
+		t.Errorf("Expected SP = 1 after call, got %d", chip.SP)
+	}
+
+	if chip.Stack[0] != 0x200 {
+		t.Errorf("Expected Stack[0] = 0x200 after call, got 0x%04X", chip.Stack[0])
+	}
+}

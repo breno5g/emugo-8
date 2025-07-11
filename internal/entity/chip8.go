@@ -97,6 +97,8 @@ func (c *Chip8) Execute(opcode uint16) {
 				panic("Invalid opcode")
 			}
 			c.op9XY0(opcode)
+		case 0x2000:
+			c.op2NNN(opcode)
 		}
 	}
 }
@@ -169,3 +171,16 @@ func (c *Chip8) op9XY0(opcode uint16) {
 		c.PC += 2
 	}
 }
+
+// 2NNN - CALL addr - Call subroutine at NNN
+func (c *Chip8) op2NNN(opcode uint16) {
+	address := opcode & 0x0FFF
+	// push the current PC to the stack
+	c.Stack[c.SP] = c.PC
+	// increment the stack pointer
+	c.SP++
+	// set the PC to the address
+	c.PC = address
+}
+
+// 00EE - RET - Return from subroutine

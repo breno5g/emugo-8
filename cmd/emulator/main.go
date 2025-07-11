@@ -85,10 +85,16 @@ func main() {
 	// fmt.Printf("PC after: 0x%04X\n", chip.PC)
 
 	// 9XY0 - SNE Vx, Vy - Skip next instruction if Vx != Vy
-	chip.V[1] = 0x10
-	// chip.V[2] = 0x20
-	chip.V[2] = 0x10
-	fmt.Printf("PC before: 0x%04X\n", chip.PC)
-	chip.Execute(0x9120) // SNE V1, V2
-	fmt.Printf("PC after: 0x%04X\n", chip.PC)
+	// chip.V[1] = 0x10
+	// // chip.V[2] = 0x20
+	// chip.V[2] = 0x10
+	// fmt.Printf("PC before: 0x%04X\n", chip.PC)
+	// chip.Execute(0x9120) // SNE V1, V2
+	// fmt.Printf("PC after: 0x%04X\n", chip.PC)
+
+	// 2NNN - CALL addr - Call subroutine at NNN
+	chip.Execute(0x2200) // CALL 0x200
+	fmt.Printf("PC: 0x%04X\n", chip.PC)
+	fmt.Printf("SP: 0x%04X\n", chip.SP)
+	fmt.Printf("Stack: %v\n", chip.Stack)
 }
