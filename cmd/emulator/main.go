@@ -64,9 +64,15 @@ func main() {
 	// chip.Execute(0x7520)
 	// fmt.Printf("V[5]: 0x%02X\n", chip.V[5])
 
-	// 3XNN - SE Vx, byte - Skip next instruction if Vx = NN
-	chip.V[4] = 0x42
-	fmt.Println("PC", chip.PC)
-	chip.Execute(0x3442) // SE V4, 0x42
-	fmt.Printf("PC: 0x%04X\n", chip.PC)
+	// // 3XNN - SE Vx, byte - Skip next instruction if Vx = NN
+	// chip.V[4] = 0x42
+	// fmt.Println("PC", chip.PC)
+	// chip.Execute(0x3442) // SE V4, 0x42
+	// fmt.Printf("PC: 0x%04X\n", chip.PC)
+
+	// 4XNN - SNE Vx, byte - Skip next instruction if Vx != NN
+	// chip.V[4] = 0x42
+	fmt.Printf("PC before: 0x%04X\n", chip.PC)
+	chip.Execute(0x4442) // SNE V4, 0x42
+	fmt.Printf("PC after: 0x%04X\n", chip.PC)
 }

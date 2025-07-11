@@ -110,20 +110,40 @@ func TestOpcode3XNN_SE(t *testing.T) {
 	chip.PC = 0x200
 	chip.V[5] = 0xAA
 
-	// SE V5, 0xAA → deve pular
+	// SE V5, 0xAA → true condition (AA == AA) → PC += 2
 	chip.Execute(0x35AA)
 
 	if chip.PC != 0x202 {
 		t.Errorf("Expected PC = 0x202 after true comparison, got 0x%04X", chip.PC)
 	}
 
-	// Resetando estado
 	chip.PC = 0x200
 	chip.V[5] = 0x10
 
-	// SE V5, 0xAA → não deve pular
+	// SE V5, 0xAA → false condition (10 ≠ AA) → não altera PC
 	chip.Execute(0x35AA)
 
+	if chip.PC != 0x200 {
+		t.Errorf("Expected PC = 0x200 after false comparison, got 0x%04X", chip.PC)
+	}
+}
+
+func TestOpcode4XNN_SNE(t *testing.T) {
+	chip := entity.NewChip8()
+	chip.PC = 0x200
+	chip.V[3] = 0x55
+
+	// SNE V3, 0x42 → true condition (55 ≠ 42) → PC += 2
+	chip.Execute(0x4342)
+	if chip.PC != 0x202 {
+		t.Errorf("Expected PC = 0x202 after true comparison, got 0x%04X", chip.PC)
+	}
+
+	chip.PC = 0x200
+	chip.V[3] = 0x42
+
+	// SNE V3, 0x42 → false condition (42 == 42) → não altera PC
+	chip.Execute(0x4342)
 	if chip.PC != 0x200 {
 		t.Errorf("Expected PC = 0x200 after false comparison, got 0x%04X", chip.PC)
 	}

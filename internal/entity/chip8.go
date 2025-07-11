@@ -85,6 +85,8 @@ func (c *Chip8) Execute(opcode uint16) {
 			c.op7XNN(opcode)
 		case 0x3000:
 			c.op3XNN(opcode)
+		case 0x4000:
+			c.op4XNN(opcode)
 		}
 	}
 }
@@ -124,12 +126,18 @@ func (c *Chip8) op7XNN(opcode uint16) {
 
 // 3XNN - SE Vx, byte - Skip next instruction if Vx = NN
 func (c *Chip8) op3XNN(opcode uint16) {
-	// get the register
 	x := (opcode & consts.XMask) >> 8
-	// get nn value
 	nn := opcode & consts.NNask
-	// compare the register with the value
 	if c.V[x] == byte(nn) {
+		c.PC += 2
+	}
+}
+
+// 4XNN - SNE Vx, byte - Skip next instruction if Vx != NN
+func (c *Chip8) op4XNN(opcode uint16) {
+	x := (opcode & consts.XMask) >> 8
+	nn := opcode & consts.NNask
+	if c.V[x] != byte(nn) {
 		c.PC += 2
 	}
 }
