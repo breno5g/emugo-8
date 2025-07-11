@@ -120,7 +120,7 @@ func TestOpcode3XNN_SE(t *testing.T) {
 	chip.PC = 0x200
 	chip.V[5] = 0x10
 
-	// SE V5, 0xAA → false condition (10 ≠ AA) → não altera PC
+	// SE V5, 0xAA → false condition (10 ≠ AA) → doesn't change PC
 	chip.Execute(0x35AA)
 
 	if chip.PC != 0x200 {
@@ -142,7 +142,7 @@ func TestOpcode4XNN_SNE(t *testing.T) {
 	chip.PC = 0x200
 	chip.V[3] = 0x42
 
-	// SNE V3, 0x42 → false condition (42 == 42) → não altera PC
+	// SNE V3, 0x42 → false condition (42 == 42) → doesn't change PC
 	chip.Execute(0x4342)
 	if chip.PC != 0x200 {
 		t.Errorf("Expected PC = 0x200 after false comparison, got 0x%04X", chip.PC)
@@ -165,8 +165,31 @@ func TestOpcode5XY0_SE(t *testing.T) {
 	chip.V[1] = 0x10
 	chip.V[2] = 0x20
 
-	// SE V1, V2 → false condition (10 ≠ 20) → não altera PC
+	// SE V1, V2 → false condition (10 ≠ 20) → doesn't change PC
 	chip.Execute(0x5120)
+	if chip.PC != 0x200 {
+		t.Errorf("Expected PC = 0x200 after false comparison, got 0x%04X", chip.PC)
+	}
+}
+
+func TestOpcode9XY0_SNE(t *testing.T) {
+	chip := entity.NewChip8()
+	chip.PC = 0x200
+	chip.V[1] = 0x10
+	chip.V[2] = 0x20
+
+	// SNE V1, V2 → true condition (10 ≠ 20) → PC += 2
+	chip.Execute(0x9120)
+	if chip.PC != 0x202 {
+		t.Errorf("Expected PC = 0x202 after true comparison, got 0x%04X", chip.PC)
+	}
+
+	chip.PC = 0x200
+	chip.V[1] = 0x10
+	chip.V[2] = 0x10
+
+	// SNE V1, V2 → false condition (10 == 10) → doesn't change PC
+	chip.Execute(0x9120)
 	if chip.PC != 0x200 {
 		t.Errorf("Expected PC = 0x200 after false comparison, got 0x%04X", chip.PC)
 	}
