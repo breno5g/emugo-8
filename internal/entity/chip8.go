@@ -38,9 +38,9 @@ func (c *Chip8) DebugScreen() {
 	for y := range consts.DisplayHeight {
 		for x := range consts.DisplayWidth {
 			if c.Screen[y*consts.DisplayWidth+x] {
-				fmt.Print("⬜")
-			} else {
 				fmt.Print("⬛")
+			} else {
+				fmt.Print("⬜")
 			}
 		}
 		fmt.Println()
@@ -69,4 +69,17 @@ func (c *Chip8) Fetch() uint16 {
 	// increment the program counter by 2 to point to the next opcode
 	c.PC += 2
 	return opcode
+}
+
+func (c *Chip8) Execute(opcode uint16) {
+	switch opcode {
+	case 0x00E0:
+		c.op00E0()
+	}
+}
+
+func (c *Chip8) op00E0() {
+	for i := range c.Screen {
+		c.Screen[i] = false
+	}
 }

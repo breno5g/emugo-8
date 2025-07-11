@@ -51,3 +51,22 @@ func TestFetch(t *testing.T) {
 		t.Errorf("PC was not incremented correctly: expected 0x202, got 0x%04X", chip.PC)
 	}
 }
+
+func TestOpcode00E0_CLS(t *testing.T) {
+	chip := entity.NewChip8()
+
+	// Turn on all pixels
+	for i := range chip.Screen {
+		chip.Screen[i] = true
+	}
+
+	// Execute the CLS opcode
+	chip.Execute(0x00E0)
+
+	// Check if the screen was cleared
+	for i, pixel := range chip.Screen {
+		if pixel {
+			t.Errorf("Pixel %d was not cleared", i)
+		}
+	}
+}
