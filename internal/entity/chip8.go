@@ -14,3 +14,18 @@ type Chip8 struct {
 	Screen [consts.DisplaySize]bool
 	Keys   [16]bool
 }
+
+func NewChip8() *Chip8 {
+	c := &Chip8{
+		PC: consts.StartAddress,
+	}
+	c.LoadFontSet()
+	return c
+}
+
+func (c *Chip8) LoadFontSet() {
+	// for i := 0; i < 80; i++ {
+	// 	c.Memory[consts.FontStartAddress+i] = consts.FontSet[i]
+	// }
+	copy(c.Memory[consts.FontStartAddress:], consts.FontSet[:])
+}
