@@ -20,15 +20,20 @@ func main() {
 	// 	}
 	// }
 
-	chip.LoadROM(consts.TestROM)
+	// chip.LoadROM(consts.TestROM)
 
-	fmt.Println("ROM bytes:")
-	for i := range consts.TestROM {
-		fmt.Printf("0x%02X ", consts.TestROM[i])
-		if (i+1)%8 == 0 {
-			fmt.Println()
-		}
-	}
+	// fmt.Println("ROM bytes:")
+	// for i := range consts.TestROM {
+	// 	fmt.Printf("0x%02X ", consts.TestROM[i])
+	// 	if (i+1)%8 == 0 {
+	// 		fmt.Println()
+	// 	}
+	// }
 
 	// chip.DebugScreen()
+
+	// first byte is 0x60 and second is 0x10
+	chip.LoadROM(consts.TestROM)
+	opcode := chip.Fetch()
+	fmt.Printf("opcode: 0x%04X\n", opcode)
 }

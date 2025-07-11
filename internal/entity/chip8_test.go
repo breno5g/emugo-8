@@ -33,3 +33,21 @@ func TestLoadROM(t *testing.T) {
 		}
 	}
 }
+
+func TestFetch(t *testing.T) {
+	chip := entity.NewChip8()
+
+	// Simulating a fake instruction 0xA2F0 in memory
+	chip.Memory[0x200] = 0xA2
+	chip.Memory[0x201] = 0xF0
+
+	opcode := chip.Fetch()
+
+	if opcode != 0xA2F0 {
+		t.Errorf("Wrong opcode fetched: expected 0xA2F0, got 0x%04X", opcode)
+	}
+
+	if chip.PC != 0x202 {
+		t.Errorf("PC was not incremented correctly: expected 0x202, got 0x%04X", chip.PC)
+	}
+}

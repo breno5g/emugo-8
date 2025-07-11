@@ -55,3 +55,18 @@ func (c *Chip8) LoadROM(data []byte) {
 
 	copy(c.Memory[consts.StartAddress:], data[:])
 }
+
+func (c *Chip8) Fetch() uint16 {
+	// get the first byte of the opcode
+	high := uint16(c.Memory[c.PC])
+	// get the second byte of the opcode
+	low := uint16(c.Memory[c.PC+1])
+	// << is left shift, | is bitwise OR
+	// left shift move the bits x positions to the left
+	// bitwise OR combines the bits of two numbers
+	// 0x0100 | 0x0001 = 0x0101
+	opcode := (high << 8) | low
+	// increment the program counter by 2 to point to the next opcode
+	c.PC += 2
+	return opcode
+}
