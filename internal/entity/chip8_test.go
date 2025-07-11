@@ -71,7 +71,7 @@ func TestOpcode00E0_CLS(t *testing.T) {
 	}
 }
 
-func TestOpcode1NNN_Jump(t *testing.T) {
+func TestOpcode1NNN_JP(t *testing.T) {
 	chip := entity.NewChip8()
 
 	chip.Execute(0x1234)
@@ -102,5 +102,29 @@ func TestOpcode7XNN_ADD(t *testing.T) {
 
 	if chip.V[5] != 0x30 {
 		t.Errorf("Expected V5 = 0x30, got 0x%02X", chip.V[5])
+	}
+}
+
+func TestOpcode3XNN_SE(t *testing.T) {
+	chip := entity.NewChip8()
+	chip.PC = 0x200
+	chip.V[5] = 0xAA
+
+	// SE V5, 0xAA → deve pular
+	chip.Execute(0x35AA)
+
+	if chip.PC != 0x202 {
+		t.Errorf("Expected PC = 0x202 after true comparison, got 0x%04X", chip.PC)
+	}
+
+	// Resetando estado
+	chip.PC = 0x200
+	chip.V[5] = 0x10
+
+	// SE V5, 0xAA → não deve pular
+	chip.Execute(0x35AA)
+
+	if chip.PC != 0x200 {
+		t.Errorf("Expected PC = 0x200 after false comparison, got 0x%04X", chip.PC)
 	}
 }

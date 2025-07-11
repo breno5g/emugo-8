@@ -83,6 +83,8 @@ func (c *Chip8) Execute(opcode uint16) {
 			c.op6XNN(opcode)
 		case 0x7000:
 			c.op7XNN(opcode)
+		case 0x3000:
+			c.op3XNN(opcode)
 		}
 	}
 }
@@ -103,9 +105,9 @@ func (c *Chip8) op1NNN(opcode uint16) {
 // 6XNN - LD Vx, byte - Load Vx with NN
 func (c *Chip8) op6XNN(opcode uint16) {
 	// get the register
-	x := (opcode & 0x0F00) >> 8
+	x := (opcode & consts.XMask) >> 8
 	// get the value
-	nn := opcode & 0x00FF
+	nn := opcode & consts.NNask
 	// load the value into the register
 	c.V[x] = byte(nn)
 }
@@ -113,12 +115,21 @@ func (c *Chip8) op6XNN(opcode uint16) {
 // 7XNN - ADD Vx, byte - Add NN to Vx
 func (c *Chip8) op7XNN(opcode uint16) {
 	// get the register
-	x := (opcode & 0x0F00) >> 8
+	x := (opcode & consts.XMask) >> 8
 	// get the value
-	nn := opcode & 0x00FF
+	nn := opcode & consts.NNask
 	// add the value to the register
-	fmt.Printf("V[%d]: 0x%02X\n", x, c.V[x])
-	fmt.Printf("NN: 0x%02X\n", nn)
-	fmt.Printf("Result: 0x%02X\n", c.V[x]+byte(nn))
 	c.V[x] += byte(nn)
+}
+
+// 3XNN - SE Vx, byte - Skip next instruction if Vx = NN
+func (c *Chip8) op3XNN(opcode uint16) {
+	// get the register
+	x := (opcode & consts.XMask) >> 8
+	// get nn value
+	nn := opcode & consts.NNask
+	// compare the register with the value
+	if c.V[x] == byte(nn) {
+		c.PC += 2
+	}
 }

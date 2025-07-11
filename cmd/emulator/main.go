@@ -59,8 +59,14 @@ func main() {
 
 	// 7XNN - ADD Vx, byte - Add NN to Vx
 	// LD V5, 0x10
-	chip.Execute(0x6510)
-	// ADD V5, 0x20
-	chip.Execute(0x7520)
-	fmt.Printf("V[5]: 0x%02X\n", chip.V[5])
+	// chip.Execute(0x6510)
+	// // ADD V5, 0x20
+	// chip.Execute(0x7520)
+	// fmt.Printf("V[5]: 0x%02X\n", chip.V[5])
+
+	// 3XNN - SE Vx, byte - Skip next instruction if Vx = NN
+	chip.V[4] = 0x42
+	fmt.Println("PC", chip.PC)
+	chip.Execute(0x3442) // SE V4, 0x42
+	fmt.Printf("PC: 0x%04X\n", chip.PC)
 }
