@@ -1,6 +1,9 @@
 package main
 
 import (
+	"fmt"
+
+	"github.com/breno5g/emugo-8/internal/consts"
 	"github.com/breno5g/emugo-8/internal/entity"
 )
 
@@ -34,11 +37,17 @@ func main() {
 	// opcode := chip.Fetch()
 	// fmt.Printf("opcode: 0x%04X\n", opcode)
 
-	for i := range chip.Screen {
-		chip.Screen[i] = true
-	}
+	// for i := range chip.Screen {
+	// 	chip.Screen[i] = true
+	// }
 
-	chip.Execute(0x00E0)
+	// chip.Execute(0x00E0)
 
-	chip.DebugScreen()
+	// chip.DebugScreen()
+
+	chip.LoadROM(consts.TestROM)
+	opcode := chip.Fetch()
+	fmt.Printf("opcode: 0x%04X\n", opcode)
+	chip.Execute(opcode)
+	fmt.Printf("PC: 0x%04X\n", chip.PC)
 }

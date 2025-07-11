@@ -70,3 +70,13 @@ func TestOpcode00E0_CLS(t *testing.T) {
 		}
 	}
 }
+
+func TestOpcode1NNN_Jump(t *testing.T) {
+	chip := entity.NewChip8()
+
+	chip.Execute(0x1234)
+
+	if chip.PC != 0x0234 {
+		t.Errorf("JP falhou: esperado PC = 0x0234, obtido 0x%04X", chip.PC)
+	}
+}

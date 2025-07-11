@@ -75,11 +75,24 @@ func (c *Chip8) Execute(opcode uint16) {
 	switch opcode {
 	case 0x00E0:
 		c.op00E0()
+	default:
+		switch opcode & 0xF000 {
+		case 0x1000:
+			c.op1NNN(opcode)
+		}
 	}
 }
 
+// 00E0 - CLS - Clear screen
 func (c *Chip8) op00E0() {
 	for i := range c.Screen {
 		c.Screen[i] = false
 	}
+}
+
+// 1NNN - JP addr - Jump to address NNN
+func (c *Chip8) op1NNN(opcode uint16) {
+	address := opcode & 0x0FFF
+	fmt.Printf("jumping to 0x%04X\n", address)
+	c.PC = address
 }
