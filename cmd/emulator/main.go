@@ -18,4 +18,6 @@ func main() {
 			fmt.Println()
 		}
 	}
+
+	chip.DebugScreen()
 }

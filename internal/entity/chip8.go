@@ -1,6 +1,10 @@
 package entity
 
-import "github.com/breno5g/emugo-8/internal/consts"
+import (
+	"fmt"
+
+	"github.com/breno5g/emugo-8/internal/consts"
+)
 
 type Chip8 struct {
 	Memory [consts.MemorySize]byte
@@ -28,4 +32,17 @@ func (c *Chip8) LoadFontSet() {
 	// 	c.Memory[consts.FontStartAddress+i] = consts.FontSet[i]
 	// }
 	copy(c.Memory[consts.FontStartAddress:], consts.FontSet[:])
+}
+
+func (c *Chip8) DebugScreen() {
+	for y := 0; y < consts.DisplayHeight; y++ {
+		for x := 0; x < consts.DisplayWidth; x++ {
+			if c.Screen[y*consts.DisplayWidth+x] {
+				fmt.Print("⬜")
+			} else {
+				fmt.Print("⬛")
+			}
+		}
+		fmt.Println()
+	}
 }
