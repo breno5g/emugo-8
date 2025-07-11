@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Guia Interativo: Emulador CHIP-8 com Go</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body class="antialiased">
+    <header
+      id="main-header"
+      class="bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-50"
+    >
+      <nav
+        class="container mx-auto px-6 py-3 flex justify-between items-center"
+      >
+        <h1 class="text-xl font-bold text-gray-800">Guia CHIP-8</h1>
+        <div class="hidden md:flex space-x-8">
+          <a href="#inicio" class="nav-link font-medium text-gray-600"
+            >Início</a
+          >
+          <a href="#arquitetura" class="nav-link font-medium text-gray-600"
+            >Arquitetura</a
+          >
+          <a href="#ciclo" class="nav-link font-medium text-gray-600"
+            >O Ciclo</a
+          >
+          <a href="#opcodes" class="nav-link font-medium text-gray-600"
+            >Opcodes</a
+          >
+          <a href="#recursos" class="nav-link font-medium text-gray-600"
+            >Recursos</a
+          >
+        </div>
+        <button id="mobile-menu-button" class="md:hidden focus:outline-none">
+          <svg
+            class="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M4 6h16M4 12h16m-7 6h7"
+            ></path>
+          </svg>
+        </button>
+      </nav>
+      <div id="mobile-menu" class="hidden md:hidden">
+        <a href="#inicio" class="block py-2 px-4 text-sm hover:bg-gray-200"
+          >Início</a
+        >
+        <a href="#arquitetura" class="block py-2 px-4 text-sm hover:bg-gray-200"
+          >Arquitetura</a
+        >
+        <a href="#ciclo" class="block py-2 px-4 text-sm hover:bg-gray-200"
+          >O Ciclo</a
+        >
+        <a href="#opcodes" class="block py-2 px-4 text-sm hover:bg-gray-200"
+          >Opcodes</a
+        >
+        <a href="#recursos" class="block py-2 px-4 text-sm hover:bg-gray-200"
+          >Recursos</a
+        >
+      </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-12">
+      <section id="inicio" class="min-h-screen flex items-center">
+        <div class="w-full text-center md:text-left">
+          <h2
+            class="text-4xl md:text-6xl font-bold text-gray-800 leading-tight"
+          >
+            Desmistificando a Emulação com
+            <span class="text-blue-600">CHIP-8</span>.
+          </h2>
+          <p class="mt-6 text-lg text-gray-600 max-w-3xl mx-auto md:mx-0">
+            Bem-vindo ao guia interativo para a construção de um emulador
+            CHIP-8. Frequentemente chamado de "Olá, Mundo!" da emulação, o
+            CHIP-8 é o ponto de partida perfeito para aprender os fundamentos da
+            arquitetura de computadores de uma forma prática e gratificante.
+            Este guia transforma a teoria em uma experiência visual, usando Go e
+            Ebitengine para construir um emulador funcional do zero. Explore as
+            seções para entender cada componente, desde a memória e
+            registradores até o ciclo de execução e o conjunto de instruções.
+          </p>
+          <a
+            href="#arquitetura"
+            class="mt-8 inline-block bg-blue-600 text-white font-bold rounded-lg px-8 py-3 hover:bg-blue-700 transition-colors"
+            >Comece a Explorar</a
+          >
+        </div>
+      </section>
+
+      <section id="arquitetura" class="pt-24">
+        <h2 class="text-3xl font-bold text-center mb-4">
+          A Arquitetura da Máquina Virtual
+        </h2>
+        <p class="text-center text-gray-600 mb-12 max-w-3xl mx-auto">
+          Para construir o emulador, primeiro precisamos entender seus
+          componentes. A arquitetura do CHIP-8 é simples, mas cada parte tem um
+          papel crucial. Interaja com os diagramas abaixo para explorar a
+          memória, os registradores e outros elementos fundamentais da VM.
+        </p>
+
+        <div class="grid md:grid-cols-2 gap-12 items-start">
+          <div>
+            <h3 class="text-2xl font-semibold mb-4 text-gray-800">
+              Mapa de Memória (4KB)
+            </h3>
+            <p class="text-gray-600 mb-6">
+              O CHIP-8 possui 4096 bytes de memória, dividida em três seções
+              principais. A maior parte é para a ROM do jogo e a RAM, mas uma
+              área inicial é reservada para o conjunto de fontes que permite a
+              exibição de texto.
+            </p>
+            <div
+              class="space-y-2 p-4 bg-gray-50 rounded-lg border border-gray-200"
+            >
+              <div
+                class="bg-yellow-200 text-yellow-800 p-3 rounded-md shadow-sm"
+              >
+                <p class="font-bold">0x000 - 0x1FF (512 Bytes)</p>
+                <p class="text-sm">Área do Interpretador (usada para fontes)</p>
+              </div>
+              <div class="bg-blue-200 text-blue-800 p-3 rounded-md shadow-sm">
+                <p class="font-bold">0x200 (Ponto de Partida)</p>
+                <p class="text-sm">Início da maioria das ROMs de programas</p>
+              </div>
+              <div class="bg-green-200 text-green-800 p-3 rounded-md shadow-sm">
+                <p class="font-bold">0x200 - 0xFFF (3584 Bytes)</p>
+                <p class="text-sm">ROM do Programa & RAM</p>
+              </div>
+            </div>
+            <div class="mt-8 chart-container">
+              <canvas id="memoryChart"></canvas>
+            </div>
+          </div>
+
+          <div>
+            <h3 class="text-2xl font-semibold mb-4 text-gray-800">
+              CPU e Registradores
+            </h3>
+            <p class="text-gray-600 mb-6">
+              O "cérebro" do CHIP-8 usa um conjunto de registradores para
+              armazenar dados temporários, endereços de memória e controlar o
+              fluxo do programa. Explore os diferentes tipos de registradores
+              abaixo.
+            </p>
+            <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+              <p class="font-semibold mb-2 text-lg">
+                Registradores de Uso Geral (V0-VF)
+              </p>
+              <div class="grid grid-cols-4 sm:grid-cols-8 gap-2 mb-4">
+                <!-- V0-VE -->
+                <div
+                  class="bg-indigo-200 text-indigo-800 text-center p-2 rounded font-mono text-sm"
+                >
+                  V0
+                </div>
+                <div
+                  class="bg-indigo-200 text-indigo-800 text-center p-2 rounded font-mono text-sm"
+                >
+                  V1
+                </div>
+                <div
+                  class="bg-indigo-200 text-indigo-800 text-center p-2 rounded font-mono text-sm"
+                >
+                  V2
+                </div>
+                <div
+                  class="bg-indigo-200 text-indigo-800 text-center p-2 rounded font-mono text-sm"
+                >
+                  V3
+                </div>
+                <div
+                  class="bg-indigo-200 text-indigo-800 text-center p-2 rounded font-mono text-sm"
+                >
+                  V4
+                </div>
+                <div
+                  class="bg-indigo-200 text-indigo-800 text-center p-2 rounded font-mono text-sm"
+                >
+                  V5
+                </div>
+                <div
+                  class="bg-indigo-200 text-indigo-800 text-center p-2 rounded font-mono text-sm"
+                >
+                  V6
+                </div>
+                <div
+                  class="bg-indigo-200 text-indigo-800 text-center p-2 rounded font-mono text-sm"
+                >
+                  V7
+                </div>
+                <div
+                  class="bg-indigo-200 text-indigo-800 text-center p-2 rounded font-mono text-sm"
+                >
+                  V8
+                </div>
+                <div
+                  class="bg-indigo-200 text-indigo-800 text-center p-2 rounded font-mono text-sm"
+                >
+                  V9
+                </div>
+                <div
+                  class="bg-indigo-200 text-indigo-800 text-center p-2 rounded font-mono text-sm"
+                >
+                  VA
+                </div>
+                <div
+                  class="bg-indigo-200 text-indigo-800 text-center p-2 rounded font-mono text-sm"
+                >
+                  VB
+                </div>
+                <div
+                  class="bg-indigo-200 text-indigo-800 text-center p-2 rounded font-mono text-sm"
+                >
+                  VC
+                </div>
+                <div
+                  class="bg-indigo-200 text-indigo-800 text-center p-2 rounded font-mono text-sm"
+                >
+                  VD
+                </div>
+                <div
+                  class="bg-indigo-200 text-indigo-800 text-center p-2 rounded font-mono text-sm"
+                >
+                  VE
+                </div>
+                <!-- VF with tooltip -->
+                <div
+                  class="has-tooltip relative bg-red-200 text-red-800 text-center p-2 rounded font-mono text-sm cursor-help"
+                >
+                  VF
+                  <div
+                    class="tooltip absolute bottom-full mb-2 w-48 bg-gray-800 text-white text-xs rounded py-2 px-3 text-left shadow-lg"
+                  >
+                    <span class="font-bold">Registrador de Flag:</span> Não
+                    usado para dados. Indica resultados de operações:
+                    <ul class="list-disc list-inside mt-1">
+                      <li>Carry em adições</li>
+                      <li>Borrow em subtrações</li>
+                      <li>Colisão de sprites</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <p class="font-semibold text-lg">Registradores Especiais</p>
+                  <div class="mt-2 space-y-2">
+                    <div
+                      class="bg-teal-200 text-teal-800 p-2 rounded font-mono"
+                    >
+                      I:
+                      <span class="font-sans text-sm"
+                        >Registrador de Índice (16-bit)</span
+                      >
+                    </div>
+                    <div
+                      class="bg-teal-200 text-teal-800 p-2 rounded font-mono"
+                    >
+                      PC:
+                      <span class="font-sans text-sm"
+                        >Contador de Programa (16-bit)</span
+                      >
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <p class="font-semibold text-lg">Temporizadores (60Hz)</p>
+                  <div class="mt-2 space-y-2">
+                    <div
+                      class="bg-orange-200 text-orange-800 p-2 rounded font-mono"
+                    >
+                      DT:
+                      <span class="font-sans text-sm">Delay Timer (8-bit)</span>
+                    </div>
+                    <div
+                      class="bg-orange-200 text-orange-800 p-2 rounded font-mono"
+                    >
+                      ST:
+                      <span class="font-sans text-sm">Sound Timer (8-bit)</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mt-4">
+                <p class="font-semibold text-lg">
+                  Pilha (Stack) e Ponteiro (SP)
+                </p>
+                <p class="text-sm text-gray-600 mb-2">
+                  Usada para chamar e retornar de sub-rotinas. Armazena até 16
+                  endereços.
+                </p>
+                <div class="flex items-center space-x-2">
+                  <div
+                    class="bg-purple-200 text-purple-800 p-2 rounded font-mono w-20 text-center"
+                  >
+                    SP
+                  </div>
+                  <div
+                    class="flex-grow h-12 bg-gray-200 rounded-lg flex items-center justify-end p-2 relative overflow-hidden"
+                  >
+                    <div
+                      class="h-full bg-purple-300 rounded-lg"
+                      style="width: 25%"
+                    ></div>
+                    <span
+                      class="absolute left-3 font-mono text-sm text-purple-900"
+                      >Stack (16 níveis)</span
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="mt-12 grid md:grid-cols-2 gap-12 items-center">
+          <div>
+            <h3 class="text-2xl font-semibold mb-4 text-gray-800">
+              Display (64x32)
+            </h3>
+            <p class="text-gray-600 mb-4">
+              A saída visual é uma tela monocromática de 64x32 pixels. Os
+              gráficos são desenhados usando sprites e uma operação XOR, que
+              permite desenhar e apagar com a mesma instrução, além de detectar
+              colisões.
+            </p>
+            <div
+              class="w-full bg-gray-900 rounded-lg p-4 aspect-[2/1] flex items-center justify-center"
+            >
+              <p class="text-green-400 font-mono">Tela CHIP-8 (64x32)</p>
+            </div>
+          </div>
+          <div>
+            <h3 class="text-2xl font-semibold mb-4 text-gray-800">
+              Teclado (16 teclas)
+            </h3>
+            <p class="text-gray-600 mb-4">
+              A entrada é feita por um teclado hexadecimal de 16 teclas. Em
+              emuladores modernos, essas teclas são mapeadas para um teclado
+              QWERTY para facilitar o uso.
+            </p>
+            <div
+              class="grid grid-cols-4 gap-2 p-4 bg-gray-100 rounded-lg border"
+            >
+              <div class="font-mono text-center py-2 bg-white rounded shadow">
+                1
+              </div>
+              <div class="font-mono text-center py-2 bg-white rounded shadow">
+                2
+              </div>
+              <div class="font-mono text-center py-2 bg-white rounded shadow">
+                3
+              </div>
+              <div
+                class="font-mono text-center py-2 bg-blue-500 text-white rounded shadow"
+              >
+                C
+              </div>
+              <div class="font-mono text-center py-2 bg-white rounded shadow">
+                4
+              </div>
+              <div class="font-mono text-center py-2 bg-white rounded shadow">
+                5
+              </div>
+              <div class="font-mono text-center py-2 bg-white rounded shadow">
+                6
+              </div>
+              <div
+                class="font-mono text-center py-2 bg-blue-500 text-white rounded shadow"
+              >
+                D
+              </div>
+              <div class="font-mono text-center py-2 bg-white rounded shadow">
+                7
+              </div>
+              <div class="font-mono text-center py-2 bg-white rounded shadow">
+                8
+              </div>
+              <div class="font-mono text-center py-2 bg-white rounded shadow">
+                9
+              </div>
+              <div
+                class="font-mono text-center py-2 bg-blue-500 text-white rounded shadow"
+              >
+                E
+              </div>
+              <div
+                class="font-mono text-center py-2 bg-blue-500 text-white rounded shadow"
+              >
+                A
+              </div>
+              <div class="font-mono text-center py-2 bg-white rounded shadow">
+                0
+              </div>
+              <div
+                class="font-mono text-center py-2 bg-blue-500 text-white rounded shadow"
+              >
+                B
+              </div>
+              <div
+                class="font-mono text-center py-2 bg-red-500 text-white rounded shadow"
+              >
+                F
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="ciclo" class="pt-24">
+        <h2 class="text-3xl font-bold text-center mb-4">O Ciclo de Execução</h2>
+        <p class="text-center text-gray-600 mb-12 max-w-3xl mx-auto">
+          O coração de qualquer CPU, real ou virtual, é o ciclo de execução. É
+          um loop contínuo de três etapas: Buscar a instrução, Decodificá-la
+          para entender o que fazer e, finalmente, Executá-la.
+        </p>
+        <div
+          class="flex flex-col md:flex-row items-center justify-around space-y-8 md:space-y-0 md:space-x-8 p-6 bg-gray-50 rounded-lg border"
+        >
+          <div class="text-center">
+            <div
+              class="bg-blue-500 text-white w-24 h-24 rounded-full flex items-center justify-center text-2xl font-bold mx-auto shadow-lg"
+            >
+              1
+            </div>
+            <h4 class="font-semibold text-xl mt-4">Fetch (Buscar)</h4>
+            <p class="text-sm text-gray-600 mt-1 max-w-xs">
+              A CPU busca o próximo opcode de 2 bytes da memória, no endereço
+              apontado pelo PC.
+            </p>
+          </div>
+          <div class="text-gray-400 text-4xl font-light hidden md:block">
+            &rarr;
+          </div>
+          <div class="text-gray-400 text-4xl font-light md:hidden">&darr;</div>
+          <div class="text-center">
+            <div
+              class="bg-green-500 text-white w-24 h-24 rounded-full flex items-center justify-center text-2xl font-bold mx-auto shadow-lg"
+            >
+              2
+            </div>
+            <h4 class="font-semibold text-xl mt-4">Decode (Decodificar)</h4>
+            <p class="text-sm text-gray-600 mt-1 max-w-xs">
+              O opcode é quebrado em partes para identificar a operação e seus
+              operandos (registradores, valores, endereços).
+            </p>
+          </div>
+          <div class="text-gray-400 text-4xl font-light hidden md:block">
+            &rarr;
+          </div>
+          <div class="text-gray-400 text-4xl font-light md:hidden">&darr;</div>
+          <div class="text-center">
+            <div
+              class="bg-yellow-500 text-white w-24 h-24 rounded-full flex items-center justify-center text-2xl font-bold mx-auto shadow-lg"
+            >
+              3
+            </div>
+            <h4 class="font-semibold text-xl mt-4">Execute (Executar)</h4>
+            <p class="text-sm text-gray-600 mt-1 max-w-xs">
+              A operação é realizada, modificando registradores, memória ou a
+              tela.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section id="opcodes" class="pt-24">
+        <h2 class="text-3xl font-bold text-center mb-4">
+          Referência de Opcodes
+        </h2>
+        <p class="text-center text-gray-600 mb-8 max-w-3xl mx-auto">
+          O CHIP-8 tem um conjunto de 35 instruções (opcodes). Explore-os usando
+          os filtros abaixo. Clique em uma linha para ver a descrição detalhada
+          e o pseudocódigo da implementação.
+        </p>
+
+        <div class="flex justify-center flex-wrap gap-2 mb-8">
+          <button
+            class="filter-btn bg-gray-200 text-gray-800 px-4 py-2 rounded-full text-sm font-medium"
+            data-category="all"
+          >
+            Todos
+          </button>
+          <button
+            class="filter-btn bg-gray-200 text-gray-800 px-4 py-2 rounded-full text-sm font-medium"
+            data-category="flow"
+          >
+            Controle de Fluxo
+          </button>
+          <button
+            class="filter-btn bg-gray-200 text-gray-800 px-4 py-2 rounded-full text-sm font-medium"
+            data-category="memory"
+          >
+            Memória
+          </button>
+          <button
+            class="filter-btn bg-gray-200 text-gray-800 px-4 py-2 rounded-full text-sm font-medium"
+            data-category="math"
+          >
+            Aritmética/Lógica
+          </button>
+          <button
+            class="filter-btn bg-gray-200 text-gray-800 px-4 py-2 rounded-full text-sm font-medium"
+            data-category="display"
+          >
+            Display
+          </button>
+          <button
+            class="filter-btn bg-gray-200 text-gray-800 px-4 py-2 rounded-full text-sm font-medium"
+            data-category="input"
+          >
+            Entrada
+          </button>
+          <button
+            class="filter-btn bg-gray-200 text-gray-800 px-4 py-2 rounded-full text-sm font-medium"
+            data-category="timer"
+          >
+            Temporizador
+          </button>
+        </div>
+
+        <div class="bg-white shadow-md rounded-lg overflow-x-auto">
+          <table class="w-full text-sm text-left text-gray-500">
+            <thead class="text-xs text-gray-700 uppercase bg-gray-100">
+              <tr>
+                <th scope="col" class="px-6 py-3">Opcode</th>
+                <th scope="col" class="px-6 py-3">Mnemônico</th>
+                <th scope="col" class="px-6 py-3 hidden md:table-cell">
+                  Breve Descrição
+                </th>
+              </tr>
+            </thead>
+            <tbody id="opcode-table-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="recursos" class="pt-24 text-center">
+        <h2 class="text-3xl font-bold mb-4">Recursos e Próximos Passos</h2>
+        <p class="text-gray-600 mb-8 max-w-3xl mx-auto">
+          Com um emulador funcional, o próximo passo é testá-lo e explorá-lo.
+          Use estes recursos para encontrar ROMs de teste, jogos e para
+          aprofundar seu conhecimento.
+        </p>
+        <div class="grid md:grid-cols-3 gap-8">
+          <div class="bg-white p-6 rounded-lg shadow-md border">
+            <h4 class="font-semibold text-xl mb-2">Suítes de Teste</h4>
+            <p class="text-gray-600 mb-4">
+              Essencial para verificar a precisão do seu emulador. A suíte de
+              Timendus é o padrão ouro.
+            </p>
+            <a
+              href="https://github.com/Timendus/chip8-test-suite"
+              target="_blank"
+              class="font-medium text-blue-600 hover:underline"
+              >chip8-test-suite &rarr;</a
+            >
+          </div>
+          <div class="bg-white p-6 rounded-lg shadow-md border">
+            <h4 class="font-semibold text-xl mb-2">Arquivos de ROMs</h4>
+            <p class="text-gray-600 mb-4">
+              Encontre jogos clássicos e programas homebrew para rodar no seu
+              emulador.
+            </p>
+            <a
+              href="https://github.com/JohnEarnest/chip8Archive"
+              target="_blank"
+              class="font-medium text-blue-600 hover:underline"
+              >chip8Archive &rarr;</a
+            >
+          </div>
+          <div class="bg-white p-6 rounded-lg shadow-md border">
+            <h4 class="font-semibold text-xl mb-2">Desafios Futuros</h4>
+            <p class="text-gray-600 mb-4">
+              Estenda seu emulador para suportar SUPER-CHIP (SCHIP) ou
+              aventure-se em sistemas mais complexos.
+            </p>
+            <a
+              href="https://tobiasvl.github.io/blog/write-a-chip-8-emulator/"
+              target="_blank"
+              class="font-medium text-blue-600 hover:underline"
+              >Guia SCHIP &rarr;</a
+            >
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="text-center py-8 mt-16 border-t">
+      <p class="text-gray-500">
+        Guia interativo criado com base em conhecimento de emulação.
+      </p>
+    </footer>
+
+    <script src="index.js"></script>
+  </body>
+</html>
