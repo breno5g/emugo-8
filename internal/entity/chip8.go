@@ -104,6 +104,8 @@ func (c *Chip8) Execute(opcode uint16) {
 			c.op2NNN(opcode)
 		case 0xA000:
 			c.opANNN(opcode)
+		case 0xD000:
+			c.opDXYN(opcode)
 		}
 	}
 }
@@ -200,4 +202,38 @@ func (c *Chip8) op00EE() {
 func (c *Chip8) opANNN(opcode uint16) {
 	addr := opcode & consts.NNNMask
 	c.I = addr
+}
+
+// DXYN - DRW Vx, Vy, N - Draw sprite at Vx, Vy with N rows
+func (c *Chip8) opDXYN(opcode uint16) {
+	// get the registers
+	x := c.V[(opcode&consts.XMask)>>8]
+	y := c.V[(opcode&consts.YMask)>>4]
+	// get the number of rows
+	n := opcode & consts.NMask
+
+	c.V[0xF] = 0 // VF = 0 (without colision)
+
+	for row := range n {
+		// get the sprite byte
+		spriteByte := c.Memory[c.I+row]
+		for col := range uint16(8) {
+			// calculate the pixel coordinates
+			pixelX := (uint16(x) + col) % consts.DisplayWidth
+			pixelY := (uint16(y) + row) % consts.DisplayHeight
+			idx := pixelY*consts.DisplayWidth + pixelX
+
+			// get the sprite bit
+			spriteBit := (spriteByte >> (7 - col)) & 1
+			if spriteBit == 1 {
+				// check if the pixel is already on
+				if c.Screen[idx] {
+					// VF = 1 (colision happened)
+					c.V[0xF] = 1
+				}
+				// toggle the pixel
+				c.Screen[idx] = !c.Screen[idx]
+			}
+		}
+	}
 }

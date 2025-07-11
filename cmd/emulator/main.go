@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/breno5g/emugo-8/internal/entity"
 )
 
@@ -108,6 +106,19 @@ func main() {
 	// fmt.Printf("Stack: %v\n", chip.Stack)
 
 	// ANNN - LD I, addr - Load I with NNN
-	chip.Execute(0xA123) // LD I, 0x123
-	fmt.Printf("I: 0x%04X\n", chip.I)
+	// chip.Execute(0xA123) // LD I, 0x123
+	// fmt.Printf("I: 0x%04X\n", chip.I)
+
+	// DXYN - DRW Vx, Vy, N - Draw sprite at Vx, Vy with N rows
+
+	chip.Memory[0x300] = 0b10000000
+	chip.I = 0x300
+
+	chip.V[0] = 0 // X
+	chip.V[1] = 0 // Y
+
+	chip.Execute(0xD011) // DRW V0, V1, 1
+
+	chip.DebugScreen()
+
 }

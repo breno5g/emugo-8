@@ -240,3 +240,28 @@ func TestOpcodeANNN_LD(t *testing.T) {
 		t.Errorf("Expected I = 0x123 after load, got 0x%04X", chip.I)
 	}
 }
+
+func TestOpcodeDXYN_DrawSinglePixel(t *testing.T) {
+	chip := entity.NewChip8()
+	chip.V[0] = 0 // x = 0
+	chip.V[1] = 0 // y = 0
+	chip.I = 0x300
+	chip.Memory[0x300] = 0b10000000 // 1 pixel to the left (0x80)
+	chip.Execute(0xD011)            // DRW V0, V1, 1
+
+	if !chip.Screen[0] {
+		t.Error("Pixel (0,0) need to be on")
+	}
+	if chip.V[0xF] != 0 {
+		t.Error("VF should be 0 (without colision)")
+	}
+
+	// Execute again: pixel will turn off (colision)
+	chip.Execute(0xD011)
+	if chip.Screen[0] {
+		t.Error("Pixel (0,0) should have been turned off")
+	}
+	if chip.V[0xF] != 1 {
+		t.Error("VF should be 1 (colision happened)")
+	}
+}
