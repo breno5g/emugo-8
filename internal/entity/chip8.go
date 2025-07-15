@@ -78,7 +78,6 @@ func (c *Chip8) Execute(opcode uint16) {
 		c.op00E0()
 	case 0x00EE:
 		c.op00EE()
-
 	default:
 		switch opcode & 0xF000 {
 		case 0x1000:
@@ -128,6 +127,8 @@ func (c *Chip8) Execute(opcode uint16) {
 			c.opDXYN(opcode)
 		case 0xC000:
 			c.opCXNN(opcode)
+		case 0xB000:
+			c.opBNNN(opcode)
 		case 0xF000:
 			switch opcode & 0x00FF {
 			case 0x1E:
@@ -431,4 +432,10 @@ func (c *Chip8) op8XYE(opcode uint16) {
 
 	c.V[0xF] = (c.V[x] & 0x80) >> 7 // MSB before shift
 	c.V[x] <<= 1
+}
+
+// BNNN - JP V0, addr - jump to NNN + V0
+func (c *Chip8) opBNNN(opcode uint16) {
+	addr := opcode & 0x0FFF
+	c.PC = addr + uint16(c.V[0])
 }

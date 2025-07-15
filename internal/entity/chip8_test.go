@@ -533,3 +533,14 @@ func TestOpcode8XYE_SHL(t *testing.T) {
 		t.Errorf("Expected V2 = 130, VF = 0; got V2 = %d, VF = %d", chip.V[2], chip.V[0xF])
 	}
 }
+
+func TestOpcodeBNNN(t *testing.T) {
+	chip := entity.NewChip8()
+	chip.V[0] = 0x20
+
+	chip.Execute(0xB100) // jump to 0x100 + 0x20 = 0x120
+
+	if chip.PC != 0x120 {
+		t.Errorf("Expected PC = 0x120; got PC = 0x%03X", chip.PC)
+	}
+}
