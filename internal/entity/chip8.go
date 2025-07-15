@@ -110,6 +110,8 @@ func (c *Chip8) Execute(opcode uint16) {
 				c.op8XY5(opcode)
 			case 0x7:
 				c.op8XY7(opcode)
+			case 0x6:
+				c.op8XY6(opcode)
 			}
 		case 0x9000:
 			if (opcode & consts.NMask) != 0 {
@@ -400,8 +402,8 @@ func (c *Chip8) op8XY5(opcode uint16) {
 
 // 8XY7 - SUB Vx, Vy - Set Vx = Vy - Vx, set VF = borrow
 func (c *Chip8) op8XY7(opcode uint16) {
-	x := (opcode & 0x0F00) >> 8
-	y := (opcode & 0x00F0) >> 4
+	x := (opcode & consts.XMask) >> 8
+	y := (opcode & consts.YMask) >> 4
 
 	if c.V[y] >= c.V[x] {
 		c.V[0xF] = 1
@@ -410,4 +412,13 @@ func (c *Chip8) op8XY7(opcode uint16) {
 	}
 
 	c.V[x] = c.V[y] - c.V[x]
+}
+
+// 8XY6 - SHR Vx - Set Vx = Vx >> 1, set VF = LSB
+func (c *Chip8) op8XY6(opcode uint16) {
+	x := (opcode & consts.XMask) >> 8
+
+	// LSB = lower significant bit
+	c.V[0xF] = c.V[x] & 0x1 // LSB before shift
+	c.V[x] >>= 1
 }

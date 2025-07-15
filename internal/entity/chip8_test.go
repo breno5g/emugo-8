@@ -493,3 +493,23 @@ func TestOpcode8XY7_Subn(t *testing.T) {
 		t.Errorf("Expected V3 = 246 (underflow), VF = 0; got V3 = %d, VF = %d", chip.V[3], chip.V[0xF])
 	}
 }
+
+func TestOpcode8XY6_SHR(t *testing.T) {
+	chip := entity.NewChip8()
+
+	// LSB = 1
+	chip.V[2] = 0b00000011 // 3
+	chip.Execute(0x8206)
+
+	if chip.V[2] != 1 || chip.V[0xF] != 1 {
+		t.Errorf("Expected V2 = 1, VF = 1; got V2 = %d, VF = %d", chip.V[2], chip.V[0xF])
+	}
+
+	// LSB = 0
+	chip.V[3] = 0b00000100 // 4
+	chip.Execute(0x8306)
+
+	if chip.V[3] != 2 || chip.V[0xF] != 0 {
+		t.Errorf("Expected V3 = 2, VF = 0; got V3 = %d, VF = %d", chip.V[3], chip.V[0xF])
+	}
+}

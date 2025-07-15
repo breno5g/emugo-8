@@ -213,11 +213,20 @@ func main() {
 
 	// fmt.Printf("V[3]: 0x%02X, V[15]: 0x%02X\n", chip.V[3], chip.V[0xF])
 
-	// 8XY5 SUB Vx, Vy - Sub Vx with Vy and add underflow to borrow
-	chip.V[3] = 10
-	chip.V[4] = 20
-	chip.Execute(0x8345)
-	fmt.Printf("V[3]: 0x%02X, V[F]: %d\n", chip.V[3], chip.V[0xF])
+	// // 8XY5 SUB Vx, Vy - Sub Vx with Vy and add underflow to borrow
+	// chip.V[3] = 10
+	// chip.V[4] = 20
+	// chip.Execute(0x8345)
+	// fmt.Printf("V[3]: 0x%02X, V[F]: %d\n", chip.V[3], chip.V[0xF])
+
+	// 8XY6 SHR Vx - Shift right Vx and set LSB to VF
+	chip.V[2] = 0b00000011 // 3
+	chip.Execute(0x8206)
+	fmt.Printf("V2: %d, VF: %d\n", chip.V[2], chip.V[0xF])
+
+	chip.V[3] = 0b00000100 // 4
+	chip.Execute(0x8306)
+	fmt.Printf("V3: %d, VF: %d", chip.V[3], chip.V[0xF])
 
 }
 
