@@ -219,15 +219,23 @@ func main() {
 	// chip.Execute(0x8345)
 	// fmt.Printf("V[3]: 0x%02X, V[F]: %d\n", chip.V[3], chip.V[0xF])
 
-	// 8XY6 SHR Vx - Shift right Vx and set LSB to VF
-	chip.V[2] = 0b00000011 // 3
-	chip.Execute(0x8206)
+	// // 8XY6 SHR Vx - Shift right Vx and set LSB to VF
+	// chip.V[2] = 0b00000011 // 3
+	// chip.Execute(0x8206)
+	// fmt.Printf("V2: %d, VF: %d\n", chip.V[2], chip.V[0xF])
+
+	// chip.V[3] = 0b00000100 // 4
+	// chip.Execute(0x8306)
+	// fmt.Printf("V3: %d, VF: %d", chip.V[3], chip.V[0xF])
+
+	// 8XYE SHL Vx - Shift left Vx and set MSB to VF
+	chip.V[2] = 0b10000001 // 129
+	chip.Execute(0x820E)
 	fmt.Printf("V2: %d, VF: %d\n", chip.V[2], chip.V[0xF])
 
-	chip.V[3] = 0b00000100 // 4
-	chip.Execute(0x8306)
+	chip.V[3] = 0b01000001 // 65
+	chip.Execute(0x830E)
 	fmt.Printf("V3: %d, VF: %d", chip.V[3], chip.V[0xF])
-
 }
 
 func RunCycles(chip *entity.Chip8, cycles int) {

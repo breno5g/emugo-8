@@ -513,3 +513,23 @@ func TestOpcode8XY6_SHR(t *testing.T) {
 		t.Errorf("Expected V3 = 2, VF = 0; got V3 = %d, VF = %d", chip.V[3], chip.V[0xF])
 	}
 }
+
+func TestOpcode8XYE_SHL(t *testing.T) {
+	chip := entity.NewChip8()
+
+	// MSB = 1
+	chip.V[1] = 0b10000001 // 129
+	chip.Execute(0x810E)
+
+	if chip.V[1] != 2 || chip.V[0xF] != 1 {
+		t.Errorf("Expected V1 = 2, VF = 1; got V1 = %d, VF = %d", chip.V[1], chip.V[0xF])
+	}
+
+	// MSB = 0
+	chip.V[2] = 0b01000001 // 65
+	chip.Execute(0x820E)
+
+	if chip.V[2] != 130 || chip.V[0xF] != 0 {
+		t.Errorf("Expected V2 = 130, VF = 0; got V2 = %d, VF = %d", chip.V[2], chip.V[0xF])
+	}
+}
