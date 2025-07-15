@@ -343,3 +343,21 @@ func TestOpcodeFX29_LD_F_Sprite(t *testing.T) {
 		t.Errorf("Expected I = 0x%04X, got 0x%04X", expected, chip.I)
 	}
 }
+
+func TestOpcodeFX33_BCD(t *testing.T) {
+	chip := entity.NewChip8()
+	chip.V[4] = 154
+	chip.I = 0x300
+
+	chip.Execute(0xF433) // LD B, V4 (154) → BCD (154 = 15*100 + 5*10 + 4)
+
+	if chip.Memory[0x300] != 1 {
+		t.Errorf("Expected Memory[I] = 1, got %d", chip.Memory[0x300])
+	}
+	if chip.Memory[0x301] != 5 {
+		t.Errorf("Expected Memory[I+1] = 5, got %d", chip.Memory[0x301])
+	}
+	if chip.Memory[0x302] != 4 {
+		t.Errorf("Expected Memory[I+2] = 4, got %d", chip.Memory[0x302])
+	}
+}

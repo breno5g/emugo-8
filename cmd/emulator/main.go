@@ -150,8 +150,13 @@ func main() {
 	// chip.Execute(0xF718) // LD ST, V7
 	// fmt.Printf("ST: 0x%02X\n", chip.ST)
 
-	// FX29 - LD F, Vx - Set I with Vx sprite
-	chip.V[1] = 0x0A // A
-	chip.Execute(0xF129)
-	fmt.Printf("I: 0x%02X\n", chip.I)
+	// // FX29 - LD F, Vx - Set I with Vx sprite
+	// chip.V[1] = 0x0A // A
+	// chip.Execute(0xF129)
+	// fmt.Printf("I: 0x%02X\n", chip.I)
+
+	// FX33 - LD B, Vx - Store BCD representation of Vx in memory
+	chip.V[2] = 0x66
+	chip.Execute(0xF233)
+	fmt.Printf("Memory: %v\n", chip.Memory[chip.I:chip.I+3])
 }
