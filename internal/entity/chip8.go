@@ -108,6 +108,8 @@ func (c *Chip8) Execute(opcode uint16) {
 				c.op8XY4(opcode)
 			case 0x5:
 				c.op8XY5(opcode)
+			case 0x7:
+				c.op8XY7(opcode)
 			}
 		case 0x9000:
 			if (opcode & consts.NMask) != 0 {
@@ -394,4 +396,18 @@ func (c *Chip8) op8XY5(opcode uint16) {
 	}
 
 	c.V[x] = c.V[x] - c.V[y]
+}
+
+// 8XY7 - SUB Vx, Vy - Set Vx = Vy - Vx, set VF = borrow
+func (c *Chip8) op8XY7(opcode uint16) {
+	x := (opcode & 0x0F00) >> 8
+	y := (opcode & 0x00F0) >> 4
+
+	if c.V[y] >= c.V[x] {
+		c.V[0xF] = 1
+	} else {
+		c.V[0xF] = 0
+	}
+
+	c.V[x] = c.V[y] - c.V[x]
 }

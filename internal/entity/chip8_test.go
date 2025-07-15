@@ -471,3 +471,25 @@ func TestOpcode8XY5_SubBorrow(t *testing.T) {
 		t.Errorf("Expected V3 = 246 (underflow), VF = 0; got V3 = %d, VF = %d", chip.V[3], chip.V[0xF])
 	}
 }
+
+func TestOpcode8XY7_Subn(t *testing.T) {
+	chip := entity.NewChip8()
+
+	// Without borrow
+	chip.V[1] = 5
+	chip.V[2] = 10
+	chip.Execute(0x8127)
+
+	if chip.V[1] != 5 || chip.V[0xF] != 1 {
+		t.Errorf("Expected V1 = 5, VF = 1; got V1 = %d, VF = %d", chip.V[1], chip.V[0xF])
+	}
+
+	// With borrow
+	chip.V[3] = 20
+	chip.V[4] = 10
+	chip.Execute(0x8347)
+
+	if chip.V[3] != 246 || chip.V[0xF] != 0 {
+		t.Errorf("Expected V3 = 246 (underflow), VF = 0; got V3 = %d, VF = %d", chip.V[3], chip.V[0xF])
+	}
+}
