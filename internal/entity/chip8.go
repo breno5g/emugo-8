@@ -106,6 +106,8 @@ func (c *Chip8) Execute(opcode uint16) {
 				c.op8XY3(opcode)
 			case 0x4:
 				c.op8XY4(opcode)
+			case 0x5:
+				c.op8XY5(opcode)
 			}
 		case 0x9000:
 			if (opcode & consts.NMask) != 0 {
@@ -375,4 +377,21 @@ func (c *Chip8) op8XY4(opcode uint16) {
 	}
 
 	c.V[x] = byte(sum & 0xFF)
+}
+
+// 8XY5 - SUB Vx, Vy - Set Vx = Vx - Vy, set VF = borrow
+func (c *Chip8) op8XY5(opcode uint16) {
+	x := (opcode & 0x0F00) >> 8
+	y := (opcode & 0x00F0) >> 4
+
+	// "fake" ternary
+	// c.V[0xF] = map[bool]uint8{true: 1, false: 0}[c.V[x] >= c.V[y]]
+
+	if c.V[x] >= c.V[y] {
+		c.V[0xF] = 1
+	} else {
+		c.V[0xF] = 0
+	}
+
+	c.V[x] = c.V[x] - c.V[y]
 }

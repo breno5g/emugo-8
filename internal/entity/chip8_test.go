@@ -449,3 +449,25 @@ func TestOpcode8XY4_AddCarry(t *testing.T) {
 		t.Errorf("With carry expected V3 = 0x20, VF = 1; got V3 = 0x%02X, VF = %d", chip.V[3], chip.V[0xF])
 	}
 }
+
+func TestOpcode8XY5_SubBorrow(t *testing.T) {
+	chip := entity.NewChip8()
+
+	// Without borrow
+	chip.V[1] = 30
+	chip.V[2] = 10
+	chip.Execute(0x8125)
+
+	if chip.V[1] != 20 || chip.V[0xF] != 1 {
+		t.Errorf("Expected V1 = 20, VF = 1; got V1 = %d, VF = %d", chip.V[1], chip.V[0xF])
+	}
+
+	// With borrow
+	chip.V[3] = 10
+	chip.V[4] = 20
+	chip.Execute(0x8345)
+
+	if chip.V[3] != 246 || chip.V[0xF] != 0 {
+		t.Errorf("Expected V3 = 246 (underflow), VF = 0; got V3 = %d, VF = %d", chip.V[3], chip.V[0xF])
+	}
+}
