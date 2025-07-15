@@ -240,7 +240,7 @@ func main() {
 	// fmt.Printf("V3: %d, VF: %d", chip.V[3], chip.V[0xF])
 
 	chip.LoadFontSet() // carrega fontes na memória
-	romData, err := os.ReadFile("assets/roms/flags.ch8")
+	romData, err := os.ReadFile("assets/roms/superpong.ch8")
 	if err != nil {
 		log.Fatal(err)
 	}

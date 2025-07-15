@@ -46,11 +46,11 @@ func (c *Chip8) DebugScreen() {
 	for y := range consts.DisplayHeight {
 		for x := range consts.DisplayWidth {
 			if c.Screen[y*consts.DisplayWidth+x] {
-				fmt.Print("⬛")
-				// fmt.Print("█")
+				// fmt.Print("⬛")
+				fmt.Print("█")
 			} else {
-				fmt.Print("⬜")
-				// fmt.Print(" ")
+				// fmt.Print("⬜")
+				fmt.Print(" ")
 			}
 		}
 		fmt.Println()
