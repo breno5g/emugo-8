@@ -18,11 +18,16 @@ type Chip8 struct {
 	ST     byte
 	Screen [consts.DisplaySize]bool
 	Keys   [16]bool
+
+	WaitingForKey bool
+	WaitingReg    byte
 }
 
 func NewChip8() *Chip8 {
 	c := &Chip8{
-		PC: consts.StartAddress,
+		PC:            consts.StartAddress,
+		WaitingForKey: false,
+		WaitingReg:    0,
 	}
 	c.LoadFontSet()
 	return c
@@ -70,6 +75,23 @@ func (c *Chip8) Fetch() uint16 {
 	// increment the program counter by 2 to point to the next opcode
 	c.PC += 2
 	return opcode
+}
+
+func (c *Chip8) Tick() {
+	if c.WaitingForKey {
+		for key, pressed := range c.Keys {
+			if pressed {
+				c.V[c.WaitingReg] = byte(key)
+				c.WaitingForKey = false
+				c.PC += 2
+				break
+			}
+		}
+		return
+	}
+
+	opcode := c.Fetch()
+	c.Execute(opcode)
 }
 
 func (c *Chip8) Execute(opcode uint16) {
@@ -147,6 +169,8 @@ func (c *Chip8) Execute(opcode uint16) {
 				c.opFX55(opcode)
 			case 0x65:
 				c.opFX65(opcode)
+			case 0x0A:
+				c.opFX0A(opcode)
 			}
 		case 0xE000:
 			switch opcode & 0x00FF {
@@ -157,7 +181,6 @@ func (c *Chip8) Execute(opcode uint16) {
 			}
 		}
 	}
-
 }
 
 // 00E0 - CLS - Clear screen
@@ -460,10 +483,18 @@ func (c *Chip8) opEX9E(opcode uint16) {
 
 // EX9E - SKP Vx - skip next instruction if Vx is not pressed
 func (c *Chip8) opEXA1(opcode uint16) {
-	x := (opcode & 0x0F00) >> 8
+	x := (opcode & consts.XMask) >> 8
 	key := c.V[x] & 0x0F
 
 	if !c.Keys[key] {
 		c.PC += 2
 	}
+}
+
+// FX0A - LD Vx, K - pause executation until key pressed
+func (c *Chip8) opFX0A(opcode uint16) {
+	x := (opcode & consts.XMask) >> 8
+
+	c.WaitingForKey = true
+	c.WaitingReg = uint8(x)
 }

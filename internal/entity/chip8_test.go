@@ -547,7 +547,6 @@ func TestOpcodeBNNN(t *testing.T) {
 
 func TestOpcodeEX9E(t *testing.T) {
 	chip := entity.NewChip8()
-	chip.PC = 0x200
 	chip.V[2] = 0x5 // verify 5 key is pressed
 	chip.Keys[0x5] = true
 
@@ -559,7 +558,6 @@ func TestOpcodeEX9E(t *testing.T) {
 
 	// key not pressed
 	chip = entity.NewChip8()
-	chip.PC = 0x200
 	chip.V[2] = 0x5
 	chip.Keys[0x5] = false
 
@@ -592,5 +590,35 @@ func TestOpcodeEXA1(t *testing.T) {
 
 	if chip.PC != 0x200 {
 		t.Errorf("Expected PC = 0x200 (without jump); got PC = 0x%03X", chip.PC)
+	}
+}
+
+func TestOpcodeFX0A(t *testing.T) {
+	chip := entity.NewChip8()
+	chip.PC = 0x200
+
+	chip.Execute(0xF10A)
+
+	if !chip.WaitingForKey || chip.WaitingReg != 0x1 {
+		t.Errorf("Incorrect key wait state: WaitingForKey=%v, WaitingReg=%d", chip.WaitingForKey, chip.WaitingReg)
+	}
+
+	if chip.PC != 0x200 {
+		t.Errorf("PC should remain 0x200 while waiting for key, but is %03X", chip.PC)
+	}
+
+	chip.Keys[0xA] = true
+	chip.Tick()
+
+	if chip.V[1] != 0xA {
+		t.Errorf("Expected V1 = 0xA; got V1 = %X", chip.V[1])
+	}
+
+	if chip.PC != 0x202 {
+		t.Errorf("Expected PC = 0x202 after key; got %03X", chip.PC)
+	}
+
+	if chip.WaitingForKey {
+		t.Errorf("Expected WaitingForKey = false after capturing key")
 	}
 }
