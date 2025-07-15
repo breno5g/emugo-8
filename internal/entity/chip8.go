@@ -113,6 +113,8 @@ func (c *Chip8) Execute(opcode uint16) {
 			switch opcode & 0x00FF {
 			case 0x1E:
 				c.opFX1E(opcode)
+			case 0x07:
+				c.opFX07(opcode)
 			}
 		}
 	}
@@ -258,4 +260,9 @@ func (c *Chip8) opFX1E(opcode uint16) {
 	x := (opcode & consts.XMask) >> 8
 
 	c.I += uint16(c.V[x])
+}
+
+func (c *Chip8) opFX07(opcode uint16) {
+	x := (opcode & consts.XMask) >> 8
+	c.V[x] = c.DT
 }

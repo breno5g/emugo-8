@@ -129,9 +129,14 @@ func main() {
 
 	// fmt.Printf("PC: 0x%04X\n", byte(177&0xF0))
 
-	// FX1E - ADD I, Vx - Add Vx to I
-	chip.I = 0x300
-	chip.V[5] = 0x20
-	chip.Execute(0xF51E) // ADD I, V5
-	fmt.Printf("I: 0x%04X\n", chip.I)
+	// // FX1E - ADD I, Vx - Add Vx to I
+	// chip.I = 0x300
+	// chip.V[5] = 0x20
+	// chip.Execute(0xF51E) // ADD I, V5
+	// fmt.Printf("I: 0x%04X\n", chip.I)
+
+	// FX07 - LD Vx, DT - Load Vx with DT
+	chip.DT = 0x42
+	chip.Execute(0xF307) // LD V3, DT
+	fmt.Printf("V[3]: 0x%02X\n", chip.V[3])
 }
