@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/breno5g/emugo-8/internal/entity"
 )
 
@@ -111,14 +113,19 @@ func main() {
 
 	// DXYN - DRW Vx, Vy, N - Draw sprite at Vx, Vy with N rows
 
-	chip.Memory[0x300] = 0b10000000
-	chip.I = 0x300
+	// chip.Memory[0x300] = 0b11111111
+	// chip.I = 0x300
 
-	chip.V[0] = 0 // X
-	chip.V[1] = 0 // Y
+	// chip.V[0] = 0 // X
+	// chip.V[1] = 0 // Y
 
-	chip.Execute(0xD011) // DRW V0, V1, 1
+	// chip.Execute(0xD011) // DRW V0, V1, 1
 
-	chip.DebugScreen()
+	// chip.DebugScreen()
 
+	// CXNN - RND Vx, byte - Generate random number and AND with NN
+	chip.Execute(0xC0FF) // RND V0, 0xFF
+	fmt.Printf("V[0]: 0x%02X\n", chip.V[0])
+
+	fmt.Printf("PC: 0x%04X\n", byte(177&0xF0))
 }

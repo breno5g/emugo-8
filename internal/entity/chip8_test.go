@@ -1,6 +1,7 @@
 package entity_test
 
 import (
+	"math/rand"
 	"testing"
 
 	"github.com/breno5g/emugo-8/internal/consts"
@@ -263,5 +264,21 @@ func TestOpcodeDXYN_DrawSinglePixel(t *testing.T) {
 	}
 	if chip.V[0xF] != 1 {
 		t.Error("VF should be 1 (colision happened)")
+	}
+}
+
+func TestOpcodeCXNN_RND(t *testing.T) {
+	rand.Seed(42) // seed to generate deterministic value
+
+	chip := entity.NewChip8()
+	chip.Execute(0xC3F0) // V3 = rand() & 0xF0
+
+	v := chip.V[3]
+
+	// first value 0xB0 (176)
+	expected := byte(176 & 0xF0)
+
+	if v != expected {
+		t.Errorf("Expected 0x%04X after call, got 0x%04X", expected, v)
 	}
 }

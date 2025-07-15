@@ -2,6 +2,7 @@ package entity
 
 import (
 	"fmt"
+	"math/rand"
 
 	"github.com/breno5g/emugo-8/internal/consts"
 )
@@ -106,6 +107,8 @@ func (c *Chip8) Execute(opcode uint16) {
 			c.opANNN(opcode)
 		case 0xD000:
 			c.opDXYN(opcode)
+		case 0xC000:
+			c.opCXNN(opcode)
 		}
 	}
 }
@@ -236,4 +239,12 @@ func (c *Chip8) opDXYN(opcode uint16) {
 			}
 		}
 	}
+}
+
+func (c *Chip8) opCXNN(opcode uint16) {
+	x := (opcode & consts.XMask) >> 8
+	nn := byte(opcode & 0x00FF)
+
+	random := byte(rand.Intn(256)) // 0x00–0xFF
+	c.V[x] = random & nn
 }
