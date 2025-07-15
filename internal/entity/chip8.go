@@ -104,6 +104,8 @@ func (c *Chip8) Execute(opcode uint16) {
 				c.op8XY2(opcode)
 			case 0x3:
 				c.op8XY3(opcode)
+			case 0x4:
+				c.op8XY4(opcode)
 			}
 		case 0x9000:
 			if (opcode & consts.NMask) != 0 {
@@ -358,4 +360,19 @@ func (c *Chip8) op8XY3(opcode uint16) {
 	x := (opcode & consts.XMask) >> 8
 	y := (opcode & consts.YMask) >> 4
 	c.V[x] ^= c.V[y]
+}
+
+// 8XY4 - ADD Vx, Vy - Set Vx = Vx + Vy, set VF = carry
+func (c *Chip8) op8XY4(opcode uint16) {
+	x := (opcode & consts.XMask) >> 8
+	y := (opcode & consts.YMask) >> 4
+
+	sum := uint16(c.V[x]) + uint16(c.V[y])
+	c.V[0xF] = 0 // reset carry
+
+	if sum > 0xFF { // if overflow
+		c.V[0xF] = 1 // add to carry
+	}
+
+	c.V[x] = byte(sum & 0xFF)
 }

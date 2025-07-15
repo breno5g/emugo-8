@@ -200,12 +200,18 @@ func main() {
 	// chip.Execute(0x8012)
 	// fmt.Printf("V[0]: 0b%08b\n", chip.V[0])
 
-	// 8XY3 - XOR Vx, Vy - Set Vx = Vx XOR Vy
-	chip.V[0] = 0b11101011
-	chip.V[1] = 0b01011101
-	chip.Execute(0x8013)
-	fmt.Printf("V[0]: 0b%08b\n", chip.V[0])
+	// // 8XY3 - XOR Vx, Vy - Set Vx = Vx XOR Vy
+	// chip.V[0] = 0b11101011
+	// chip.V[1] = 0b01011101
+	// chip.Execute(0x8013)
+	// fmt.Printf("V[0]: 0b%08b\n", chip.V[0])
 
+	// 8XY4 - ADD Vx, Vy - Sum Vx with Vy and add overflow to carry
+	chip.V[3] = 0xF0
+	chip.V[4] = 0x30
+	chip.Execute(0x8344)
+
+	fmt.Printf("V[3]: 0x%02X, V[15]: 0x%02X\n", chip.V[3], chip.V[0xF])
 }
 
 func RunCycles(chip *entity.Chip8, cycles int) {

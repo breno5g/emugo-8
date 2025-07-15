@@ -427,3 +427,25 @@ func TestOpcode8XY3_XOR(t *testing.T) {
 		t.Errorf("Expected V5 = 0xA5, got 0x%02X", chip.V[5])
 	}
 }
+
+func TestOpcode8XY4_AddCarry(t *testing.T) {
+	chip := entity.NewChip8()
+
+	// Without carry
+	chip.V[1] = 0x10
+	chip.V[2] = 0x20
+	chip.Execute(0x8124)
+
+	if chip.V[1] != 0x30 || chip.V[0xF] != 0 {
+		t.Errorf("Without carry expected V1 = 0x30, VF = 0; got V1 = 0x%02X, VF = %d", chip.V[1], chip.V[0xF])
+	}
+
+	// With carry
+	chip.V[3] = 0xF0
+	chip.V[4] = 0x30
+	chip.Execute(0x8344)
+
+	if chip.V[3] != 0x20 || chip.V[0xF] != 1 {
+		t.Errorf("With carry expected V3 = 0x20, VF = 1; got V3 = 0x%02X, VF = %d", chip.V[3], chip.V[0xF])
+	}
+}
