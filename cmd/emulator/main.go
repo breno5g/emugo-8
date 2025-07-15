@@ -135,8 +135,13 @@ func main() {
 	// chip.Execute(0xF51E) // ADD I, V5
 	// fmt.Printf("I: 0x%04X\n", chip.I)
 
-	// FX07 - LD Vx, DT - Load Vx with DT
-	chip.DT = 0x42
-	chip.Execute(0xF307) // LD V3, DT
-	fmt.Printf("V[3]: 0x%02X\n", chip.V[3])
+	// // FX07 - LD Vx, DT - Load Vx with DT
+	// chip.DT = 0x42
+	// chip.Execute(0xF307) // LD V3, DT
+	// fmt.Printf("V[3]: 0x%02X\n", chip.V[3])
+
+	// FX15 - LD DT, Vx - Load DT with Vx
+	chip.V[3] = 0x42
+	chip.Execute(0xF315) // LD DT, V3
+	fmt.Printf("DT: 0x%02X\n", chip.DT)
 }

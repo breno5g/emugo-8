@@ -306,3 +306,15 @@ func TestOpcodeFX07_LD_Vx_DT(t *testing.T) {
 		t.Errorf("Expected V3 = 0x42 after load, got 0x%02X", chip.V[3])
 	}
 }
+
+func TestOpcodeFX15_LD_DT_Vx(t *testing.T) {
+	chip := entity.NewChip8()
+	chip.V[4] = 0x7F
+	chip.DT = 0x00
+
+	chip.Execute(0xF415) // DT = V4
+
+	if chip.DT != 0x7F {
+		t.Errorf("Expected DT = 0x7F, got 0x%02X", chip.DT)
+	}
+}
