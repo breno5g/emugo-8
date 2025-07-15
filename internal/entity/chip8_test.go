@@ -361,3 +361,18 @@ func TestOpcodeFX33_BCD(t *testing.T) {
 		t.Errorf("Expected Memory[I+2] = 4, got %d", chip.Memory[0x302])
 	}
 }
+
+func TestOpcodeFX55_LD_Memory_Vx(t *testing.T) {
+	chip := entity.NewChip8()
+	chip.V[0] = 0xAA
+	chip.V[1] = 0xBB
+	chip.V[2] = 0xCC
+	chip.I = 0x300
+
+	chip.Execute(0xF255) // V0–V2 → Memory[0x300–0x302]
+
+	if chip.Memory[0x300] != 0xAA || chip.Memory[0x301] != 0xBB || chip.Memory[0x302] != 0xCC {
+		t.Errorf("Esperado [0xAA, 0xBB, 0xCC], obtido [%02X, %02X, %02X]",
+			chip.Memory[0x300], chip.Memory[0x301], chip.Memory[0x302])
+	}
+}

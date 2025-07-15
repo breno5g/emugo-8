@@ -123,6 +123,8 @@ func (c *Chip8) Execute(opcode uint16) {
 				c.opFX29(opcode)
 			case 0x33:
 				c.opFX33(opcode)
+			case 0x55:
+				c.opFX55(opcode)
 			}
 		}
 	}
@@ -299,4 +301,12 @@ func (c *Chip8) opFX33(opcode uint16) {
 	c.Memory[c.I] = val / 100
 	c.Memory[c.I+1] = (val / 10) % 10
 	c.Memory[c.I+2] = val % 10
+}
+
+func (c *Chip8) opFX55(opcode uint16) {
+	x := (opcode & consts.XMask) >> 8
+
+	for i := uint16(0); i <= x; i++ {
+		c.Memory[c.I+i] = c.V[i]
+	}
 }
