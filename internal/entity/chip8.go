@@ -3,6 +3,7 @@ package entity
 import (
 	"fmt"
 	"math/rand"
+	"time"
 
 	"github.com/breno5g/emugo-8/internal/consts"
 )
@@ -41,12 +42,15 @@ func (c *Chip8) LoadFontSet() {
 }
 
 func (c *Chip8) DebugScreen() {
+	fmt.Print("\033[H")
 	for y := range consts.DisplayHeight {
 		for x := range consts.DisplayWidth {
 			if c.Screen[y*consts.DisplayWidth+x] {
-				fmt.Print("⬛")
+				// fmt.Print("⬛")
+				fmt.Print("█")
 			} else {
-				fmt.Print("⬜")
+				// fmt.Print("⬜")
+				fmt.Print(" ")
 			}
 		}
 		fmt.Println()
@@ -497,4 +501,32 @@ func (c *Chip8) opFX0A(opcode uint16) {
 
 	c.WaitingForKey = true
 	c.WaitingReg = uint8(x)
+}
+
+// Event Loop
+func (c *Chip8) EventLoop() {
+	const fps = 60
+	ticker := time.NewTicker(time.Second / fps)
+	defer ticker.Stop()
+	for range ticker.C {
+		// handleInput(c)
+		c.Tick()
+		c.UpdateTimers()
+
+		if c.ST > 0 {
+			fmt.Printf("BEEEEP")
+		}
+
+		c.DebugScreen()
+	}
+}
+
+func (c *Chip8) UpdateTimers() {
+	if c.DT > 0 {
+		c.DT--
+	}
+	if c.ST > 0 {
+		c.ST--
+	}
+
 }

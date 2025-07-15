@@ -1,7 +1,9 @@
 package main
 
 import (
-	"fmt"
+	"log"
+	"os"
+	"time"
 
 	"github.com/breno5g/emugo-8/internal/entity"
 )
@@ -228,20 +230,25 @@ func main() {
 	// chip.Execute(0x8306)
 	// fmt.Printf("V3: %d, VF: %d", chip.V[3], chip.V[0xF])
 
-	// 8XYE SHL Vx - Shift left Vx and set MSB to VF
-	chip.V[2] = 0b10000001 // 129
-	chip.Execute(0x820E)
-	fmt.Printf("V2: %d, VF: %d\n", chip.V[2], chip.V[0xF])
+	// // 8XYE SHL Vx - Shift left Vx and set MSB to VF
+	// chip.V[2] = 0b10000001 // 129
+	// chip.Execute(0x820E)
+	// fmt.Printf("V2: %d, VF: %d\n", chip.V[2], chip.V[0xF])
 
-	chip.V[3] = 0b01000001 // 65
-	chip.Execute(0x830E)
-	fmt.Printf("V3: %d, VF: %d", chip.V[3], chip.V[0xF])
-}
+	// chip.V[3] = 0b01000001 // 65
+	// chip.Execute(0x830E)
+	// fmt.Printf("V3: %d, VF: %d", chip.V[3], chip.V[0xF])
 
-func RunCycles(chip *entity.Chip8, cycles int) {
-	for range cycles {
-		opcode := uint16(chip.Memory[chip.PC])<<8 | uint16(chip.Memory[chip.PC+1])
-		chip.PC += 2
-		chip.Execute(opcode)
+	chip.LoadFontSet() // carrega fontes na memória
+	romData, err := os.ReadFile("assets/roms/corax+.ch8")
+	if err != nil {
+		log.Fatal(err)
 	}
+	chip.LoadROM(romData)
+
+	const fps = 60
+	ticker := time.NewTicker(time.Second / fps)
+	defer ticker.Stop()
+
+	chip.EventLoop()
 }
