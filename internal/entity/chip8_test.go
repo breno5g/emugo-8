@@ -372,7 +372,7 @@ func TestOpcodeFX55_LD_Memory_Vx(t *testing.T) {
 	chip.Execute(0xF255) // V0–V2 → Memory[0x300–0x302]
 
 	if chip.Memory[0x300] != 0xAA || chip.Memory[0x301] != 0xBB || chip.Memory[0x302] != 0xCC {
-		t.Errorf("Esperado [0xAA, 0xBB, 0xCC], obtido [%02X, %02X, %02X]",
+		t.Errorf("Expected [0xAA, 0xBB, 0xCC], got [%02X, %02X, %02X]",
 			chip.Memory[0x300], chip.Memory[0x301], chip.Memory[0x302])
 	}
 }

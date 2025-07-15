@@ -258,6 +258,7 @@ func (c *Chip8) opDXYN(opcode uint16) {
 	}
 }
 
+// CXNN - RND Vx, byte - Generate random number and AND with NN
 func (c *Chip8) opCXNN(opcode uint16) {
 	x := (opcode & consts.XMask) >> 8
 	nn := byte(opcode & 0x00FF)
@@ -266,27 +267,32 @@ func (c *Chip8) opCXNN(opcode uint16) {
 	c.V[x] = random & nn
 }
 
+// FX1E - ADD I, Vx - Add Vx to I
 func (c *Chip8) opFX1E(opcode uint16) {
 	x := (opcode & consts.XMask) >> 8
 
 	c.I += uint16(c.V[x])
 }
 
+// FX07 - LD Vx, DT - Load Vx with DT
 func (c *Chip8) opFX07(opcode uint16) {
 	x := (opcode & consts.XMask) >> 8
 	c.V[x] = c.DT
 }
 
+// FX15 - LD DT, Vx - Load DT with Vx
 func (c *Chip8) opFX15(opcode uint16) {
 	x := (opcode & consts.XMask) >> 8
 	c.DT = c.V[x]
 }
 
+// FX18 - LD ST, Vx - Load ST with Vx
 func (c *Chip8) opFX18(opcode uint16) {
 	x := (opcode & consts.XMask) >> 8
 	c.ST = c.V[x]
 }
 
+// FX29 - LD F, Vx - Set I with Vx sprite
 func (c *Chip8) opFX29(opcode uint16) {
 	x := (opcode & consts.XMask) >> 8
 	digit := c.V[x] & 0x0F
@@ -294,6 +300,7 @@ func (c *Chip8) opFX29(opcode uint16) {
 	c.I = uint16(digit) * 5
 }
 
+// FX33 - LD B, Vx - Store BCD representation of Vx in memory
 func (c *Chip8) opFX33(opcode uint16) {
 	x := (opcode & consts.XMask) >> 8
 	val := c.V[x]
@@ -303,6 +310,7 @@ func (c *Chip8) opFX33(opcode uint16) {
 	c.Memory[c.I+2] = val % 10
 }
 
+// FX55 - LD [I], Vx - Store registers V0 to Vx in memory
 func (c *Chip8) opFX55(opcode uint16) {
 	x := (opcode & consts.XMask) >> 8
 
