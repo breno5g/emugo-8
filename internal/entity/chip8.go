@@ -96,6 +96,15 @@ func (c *Chip8) Execute(opcode uint16) {
 				panic("Invalid opcode")
 			}
 			c.op5XY0(opcode)
+		case 0x8000:
+			switch opcode & 0x000F {
+			case 0x1:
+				c.op8XY1(opcode)
+			case 0x2:
+				c.op8XY2(opcode)
+			case 0x3:
+				c.op8XY3(opcode)
+			}
 		case 0x9000:
 			if (opcode & consts.NMask) != 0 {
 				panic("Invalid opcode")
@@ -328,4 +337,25 @@ func (c *Chip8) opFX65(opcode uint16) {
 	for i := uint16(0); i <= x; i++ {
 		c.V[i] = c.Memory[c.I+i]
 	}
+}
+
+// 8XY1 - OR Vx, Vy - Set Vx = Vx OR Vy
+func (c *Chip8) op8XY1(opcode uint16) {
+	x := (opcode & consts.XMask) >> 8
+	y := (opcode & consts.YMask) >> 4
+	c.V[x] |= c.V[y]
+}
+
+// 8XY2 - AND Vx, Vy - Set Vx = Vx AND Vy
+func (c *Chip8) op8XY2(opcode uint16) {
+	x := (opcode & consts.XMask) >> 8
+	y := (opcode & consts.YMask) >> 4
+	c.V[x] &= c.V[y]
+}
+
+// 8XY3 - XOR Vx, Vy - Set Vx = Vx XOR Vy
+func (c *Chip8) op8XY3(opcode uint16) {
+	x := (opcode & consts.XMask) >> 8
+	y := (opcode & consts.YMask) >> 4
+	c.V[x] ^= c.V[y]
 }

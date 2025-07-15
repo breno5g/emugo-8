@@ -391,3 +391,39 @@ func TestOpcodeFX65_LD_Vx_Memory(t *testing.T) {
 			chip.V[0], chip.V[1], chip.V[2])
 	}
 }
+
+func TestOpcode8XY1_OR(t *testing.T) {
+	chip := entity.NewChip8()
+	chip.V[1] = 0x0F
+	chip.V[2] = 0xF0
+
+	chip.Execute(0x8121) // V1 = V1 | V2
+
+	if chip.V[1] != 0xFF {
+		t.Errorf("Expected V1 = 0xFF, got 0x%02X", chip.V[1])
+	}
+}
+
+func TestOpcode8XY2_AND(t *testing.T) {
+	chip := entity.NewChip8()
+	chip.V[3] = 0x5A
+	chip.V[4] = 0xF0
+
+	chip.Execute(0x8342) // V3 = V3 & V4
+
+	if chip.V[3] != 0x50 {
+		t.Errorf("Expected V3 = 0x50, got 0x%02X", chip.V[3])
+	}
+}
+
+func TestOpcode8XY3_XOR(t *testing.T) {
+	chip := entity.NewChip8()
+	chip.V[5] = 0xAA
+	chip.V[6] = 0x0F
+
+	chip.Execute(0x8563) // V5 = V5 ^ V6
+
+	if chip.V[5] != 0xA5 {
+		t.Errorf("Expected V5 = 0xA5, got 0x%02X", chip.V[5])
+	}
+}

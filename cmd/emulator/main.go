@@ -1,8 +1,7 @@
 package main
 
 import (
-	"log"
-	"os"
+	"fmt"
 
 	"github.com/breno5g/emugo-8/internal/entity"
 )
@@ -180,14 +179,33 @@ func main() {
 
 	// romData, err := os.ReadFile("assets/roms/ibm-logo.ch8")
 	// romData, err := os.ReadFile("assets/roms/chip8-logo.ch8")
-	romData, err := os.ReadFile("assets/roms/corax+.ch8")
-	if err != nil {
-		log.Fatal(err)
-	}
+	// romData, err := os.ReadFile("assets/roms/corax+.ch8")
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
 
-	chip.LoadROM(romData)
-	RunCycles(chip, 1000)
-	chip.DebugScreen()
+	// chip.LoadROM(romData)
+	// RunCycles(chip, 1000)
+	// chip.DebugScreen()
+
+	// // 8XY1 - OR Vx, Vy - Set Vx = Vx OR Vy
+	// chip.V[0] = 0b10101010
+	// chip.V[1] = 0b01010101
+	// chip.Execute(0x8011)
+	// fmt.Printf("V[0]: 0b%08b\n", chip.V[0])
+
+	// // 8XY2 - AND Vx, Vy - Set Vx = Vx AND Vy
+	// chip.V[0] = 0b10101011
+	// chip.V[1] = 0b01010101
+	// chip.Execute(0x8012)
+	// fmt.Printf("V[0]: 0b%08b\n", chip.V[0])
+
+	// 8XY3 - XOR Vx, Vy - Set Vx = Vx XOR Vy
+	chip.V[0] = 0b11101011
+	chip.V[1] = 0b01011101
+	chip.Execute(0x8013)
+	fmt.Printf("V[0]: 0b%08b\n", chip.V[0])
+
 }
 
 func RunCycles(chip *entity.Chip8, cycles int) {
