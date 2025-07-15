@@ -152,6 +152,8 @@ func (c *Chip8) Execute(opcode uint16) {
 			switch opcode & 0x00FF {
 			case 0x9E:
 				c.opEX9E(opcode)
+			case 0xA1:
+				c.opEXA1(opcode)
 			}
 		}
 	}
@@ -452,6 +454,16 @@ func (c *Chip8) opEX9E(opcode uint16) {
 	key := c.V[x] & 0x0F
 
 	if c.Keys[key] {
+		c.PC += 2
+	}
+}
+
+// EX9E - SKP Vx - skip next instruction if Vx is not pressed
+func (c *Chip8) opEXA1(opcode uint16) {
+	x := (opcode & 0x0F00) >> 8
+	key := c.V[x] & 0x0F
+
+	if !c.Keys[key] {
 		c.PC += 2
 	}
 }

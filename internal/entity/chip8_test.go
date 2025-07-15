@@ -569,3 +569,28 @@ func TestOpcodeEX9E(t *testing.T) {
 		t.Errorf("Expected PC = 0x200 (without jump); got PC = 0x%03X", chip.PC)
 	}
 }
+
+func TestOpcodeEXA1(t *testing.T) {
+	chip := entity.NewChip8()
+	chip.PC = 0x200
+	chip.V[1] = 0xC // verify C key is **not** pressed
+
+	// Key NOT pressed
+	chip.Keys[0xC] = false
+	chip.Execute(0xE1A1)
+
+	if chip.PC != 0x202 {
+		t.Errorf("Expected PC = 0x202 (pulo); got PC = 0x%03X", chip.PC)
+	}
+
+	// Key pressed
+	chip = entity.NewChip8()
+	chip.PC = 0x200
+	chip.V[1] = 0xC
+	chip.Keys[0xC] = true
+	chip.Execute(0xE1A1)
+
+	if chip.PC != 0x200 {
+		t.Errorf("Expected PC = 0x200 (without jump); got PC = 0x%03X", chip.PC)
+	}
+}
