@@ -544,3 +544,28 @@ func TestOpcodeBNNN(t *testing.T) {
 		t.Errorf("Expected PC = 0x120; got PC = 0x%03X", chip.PC)
 	}
 }
+
+func TestOpcodeEX9E(t *testing.T) {
+	chip := entity.NewChip8()
+	chip.PC = 0x200
+	chip.V[2] = 0x5 // verify 5 key is pressed
+	chip.Keys[0x5] = true
+
+	chip.Execute(0xE29E)
+
+	if chip.PC != 0x202 {
+		t.Errorf("Expected PC = 0x202; got PC = 0x%03X", chip.PC)
+	}
+
+	// key not pressed
+	chip = entity.NewChip8()
+	chip.PC = 0x200
+	chip.V[2] = 0x5
+	chip.Keys[0x5] = false
+
+	chip.Execute(0xE29E)
+
+	if chip.PC != 0x200 {
+		t.Errorf("Expected PC = 0x200 (without jump); got PC = 0x%03X", chip.PC)
+	}
+}
