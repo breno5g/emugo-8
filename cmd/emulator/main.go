@@ -1,7 +1,8 @@
 package main
 
 import (
-	"fmt"
+	"log"
+	"os"
 
 	"github.com/breno5g/emugo-8/internal/entity"
 )
@@ -168,12 +169,31 @@ func main() {
 	// chip.Execute(0xF355)
 	// fmt.Printf("Memory: %v\n", chip.Memory[chip.I:chip.I+4])
 
-	// FX65 - LD Vx, [I] - Read registers V0 to Vx from memory
-	chip.Memory[0x300] = 0x11
-	chip.Memory[0x301] = 0x22
-	chip.Memory[0x302] = 0x33
-	chip.Memory[0x303] = 0x44
-	chip.I = 0x300
-	chip.Execute(0xF365)
-	fmt.Printf("V: %v\n", chip.V[:4])
+	// // FX65 - LD Vx, [I] - Read registers V0 to Vx from memory
+	// chip.Memory[0x300] = 0x11
+	// chip.Memory[0x301] = 0x22
+	// chip.Memory[0x302] = 0x33
+	// chip.Memory[0x303] = 0x44
+	// chip.I = 0x300
+	// chip.Execute(0xF365)
+	// fmt.Printf("V: %v\n", chip.V[:4])
+
+	// romData, err := os.ReadFile("assets/roms/ibm-logo.ch8")
+	// romData, err := os.ReadFile("assets/roms/chip8-logo.ch8")
+	romData, err := os.ReadFile("assets/roms/corax+.ch8")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	chip.LoadROM(romData)
+	RunCycles(chip, 1000)
+	chip.DebugScreen()
+}
+
+func RunCycles(chip *entity.Chip8, cycles int) {
+	for range cycles {
+		opcode := uint16(chip.Memory[chip.PC])<<8 | uint16(chip.Memory[chip.PC+1])
+		chip.PC += 2
+		chip.Execute(opcode)
+	}
 }
