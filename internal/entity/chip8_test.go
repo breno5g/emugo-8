@@ -330,3 +330,16 @@ func TestOpcodeFX18_LD_ST_Vx(t *testing.T) {
 		t.Errorf("Expected ST = 0x55, got 0x%02X", chip.ST)
 	}
 }
+
+func TestOpcodeFX29_LD_F_Sprite(t *testing.T) {
+	chip := entity.NewChip8()
+	chip.V[1] = 0x0A // A
+
+	chip.Execute(0xF129) // I = sprite(V1) (A)
+
+	expected := uint16(0x0A * 5) // 5 bytes per sprite
+
+	if chip.I != expected {
+		t.Errorf("Expected I = 0x%04X, got 0x%04X", expected, chip.I)
+	}
+}

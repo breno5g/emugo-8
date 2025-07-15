@@ -119,6 +119,8 @@ func (c *Chip8) Execute(opcode uint16) {
 				c.opFX15(opcode)
 			case 0x18:
 				c.opFX18(opcode)
+			case 0x29:
+				c.opFX29(opcode)
 			}
 		}
 	}
@@ -279,4 +281,11 @@ func (c *Chip8) opFX15(opcode uint16) {
 func (c *Chip8) opFX18(opcode uint16) {
 	x := (opcode & 0x0F00) >> 8
 	c.ST = c.V[x]
+}
+
+func (c *Chip8) opFX29(opcode uint16) {
+	x := (opcode & 0x0F00) >> 8
+	digit := c.V[x] & 0x0F // só 0x0–0xF
+
+	c.I = uint16(digit) * 5
 }
