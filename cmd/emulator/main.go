@@ -160,11 +160,20 @@ func main() {
 	// chip.Execute(0xF233)
 	// fmt.Printf("Memory: %v\n", chip.Memory[chip.I:chip.I+3])
 
-	// FX55 - LD [I], Vx - Store registers V0 to Vx in memory
-	chip.V[0] = 0x11
-	chip.V[1] = 0x22
-	chip.V[2] = 0x33
-	chip.V[3] = 0x44
-	chip.Execute(0xF355)
-	fmt.Printf("Memory: %v\n", chip.Memory[chip.I:chip.I+4])
+	// // FX55 - LD [I], Vx - Store registers V0 to Vx in memory
+	// chip.V[0] = 0x11
+	// chip.V[1] = 0x22
+	// chip.V[2] = 0x33
+	// chip.V[3] = 0x44
+	// chip.Execute(0xF355)
+	// fmt.Printf("Memory: %v\n", chip.Memory[chip.I:chip.I+4])
+
+	// FX65 - LD Vx, [I] - Read registers V0 to Vx from memory
+	chip.Memory[0x300] = 0x11
+	chip.Memory[0x301] = 0x22
+	chip.Memory[0x302] = 0x33
+	chip.Memory[0x303] = 0x44
+	chip.I = 0x300
+	chip.Execute(0xF365)
+	fmt.Printf("V: %v\n", chip.V[:4])
 }

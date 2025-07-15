@@ -125,6 +125,8 @@ func (c *Chip8) Execute(opcode uint16) {
 				c.opFX33(opcode)
 			case 0x55:
 				c.opFX55(opcode)
+			case 0x65:
+				c.opFX65(opcode)
 			}
 		}
 	}
@@ -316,5 +318,14 @@ func (c *Chip8) opFX55(opcode uint16) {
 
 	for i := uint16(0); i <= x; i++ {
 		c.Memory[c.I+i] = c.V[i]
+	}
+}
+
+// FX65 - LD Vx, [I] - Read registers V0 to Vx from memory
+func (c *Chip8) opFX65(opcode uint16) {
+	x := (opcode & 0x0F00) >> 8
+
+	for i := uint16(0); i <= x; i++ {
+		c.V[i] = c.Memory[c.I+i]
 	}
 }
