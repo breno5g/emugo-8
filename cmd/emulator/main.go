@@ -123,9 +123,15 @@ func main() {
 
 	// chip.DebugScreen()
 
-	// CXNN - RND Vx, byte - Generate random number and AND with NN
-	chip.Execute(0xC0FF) // RND V0, 0xFF
-	fmt.Printf("V[0]: 0x%02X\n", chip.V[0])
+	// // CXNN - RND Vx, byte - Generate random number and AND with NN
+	// chip.Execute(0xC0FF) // RND V0, 0xFF
+	// fmt.Printf("V[0]: 0x%02X\n", chip.V[0])
 
-	fmt.Printf("PC: 0x%04X\n", byte(177&0xF0))
+	// fmt.Printf("PC: 0x%04X\n", byte(177&0xF0))
+
+	// FX1E - ADD I, Vx - Add Vx to I
+	chip.I = 0x300
+	chip.V[5] = 0x20
+	chip.Execute(0xF51E) // ADD I, V5
+	fmt.Printf("I: 0x%04X\n", chip.I)
 }

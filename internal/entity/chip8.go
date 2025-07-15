@@ -109,6 +109,11 @@ func (c *Chip8) Execute(opcode uint16) {
 			c.opDXYN(opcode)
 		case 0xC000:
 			c.opCXNN(opcode)
+		case 0xF000:
+			switch opcode & 0x00FF {
+			case 0x1E:
+				c.opFX1E(opcode)
+			}
 		}
 	}
 }
@@ -247,4 +252,10 @@ func (c *Chip8) opCXNN(opcode uint16) {
 
 	random := byte(rand.Intn(256)) // 0x00–0xFF
 	c.V[x] = random & nn
+}
+
+func (c *Chip8) opFX1E(opcode uint16) {
+	x := (opcode & consts.XMask) >> 8
+
+	c.I += uint16(c.V[x])
 }

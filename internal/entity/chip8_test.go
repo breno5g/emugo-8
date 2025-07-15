@@ -282,3 +282,15 @@ func TestOpcodeCXNN_RND(t *testing.T) {
 		t.Errorf("Expected 0x%04X after call, got 0x%04X", expected, v)
 	}
 }
+
+func TestOpcodeFX1E_AddI(t *testing.T) {
+	chip := entity.NewChip8()
+	chip.I = 0x300
+	chip.V[5] = 0x20
+
+	chip.Execute(0xF51E)
+
+	if chip.I != 0x320 {
+		t.Errorf("Expected I = 0x320 after add, got 0x%04X", chip.I)
+	}
+}
