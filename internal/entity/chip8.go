@@ -36,20 +36,22 @@ func NewChip8() *Chip8 {
 }
 
 func (c *Chip8) LoadFontSet() {
-	// for i := 0; i < 80; i++ {
-	// 	c.Memory[consts.FontStartAddress+i] = consts.FontSet[i]
-	// }
 	copy(c.Memory[consts.FontStartAddress:], consts.FontSet[:])
 }
 
+// DebugScreen renders the current screen state to the console.
+// It uses a strings.Builder to build the entire screen in a buffer
+// before printing once, which prevents flickering.
 func (c *Chip8) DebugScreen() {
 	var screen strings.Builder
 	screen.Grow(consts.DisplaySize + consts.DisplayHeight)
 
+	// Move cursor to home position. This overwrites the previous frame
+	// instead of clearing the screen, which is faster.
 	screen.WriteString("\033[H")
 
-	for y := range consts.DisplayHeight {
-		for x := range consts.DisplayWidth {
+	for y := 0; y < consts.DisplayHeight; y++ {
+		for x := 0; x < consts.DisplayWidth; x++ {
 			if c.Screen[y*consts.DisplayWidth+x] {
 				screen.WriteString("⬛")
 			} else {
@@ -61,31 +63,28 @@ func (c *Chip8) DebugScreen() {
 	fmt.Print(screen.String())
 }
 
+// Load ROM data into memory, starting at 0x200.
 func (c *Chip8) LoadROM(data []byte) {
 	const maxRomSize = consts.MemorySize - consts.StartAddress
 	if len(data) > maxRomSize {
 		panic("ROM too large")
 	}
-
 	copy(c.Memory[consts.StartAddress:], data[:])
 }
 
+// Fetch reads the 2-byte opcode from memory at the PC and advances the PC.
 func (c *Chip8) Fetch() uint16 {
-	// get the first byte of the opcode
 	high := uint16(c.Memory[c.PC])
-	// get the second byte of the opcode
 	low := uint16(c.Memory[c.PC+1])
-	// << is left shift, | is bitwise OR
-	// left shift move the bits x positions to the left
-	// bitwise OR combines the bits of two numbers
-	// 0x0100 | 0x0001 = 0x0101
 	opcode := (high << 8) | low
-	// increment the program counter by 2 to point to the next opcode
 	c.PC += 2
 	return opcode
 }
 
+// Tick executes one CPU cycle: fetch, decode, and execute.
+// It also handles the waiting-for-key state.
 func (c *Chip8) Tick() {
+	// If the emulator is waiting for a key press, halt execution.
 	if c.WaitingForKey {
 		for key, pressed := range c.Keys {
 			if pressed {
@@ -122,11 +121,13 @@ func (c *Chip8) Execute(opcode uint16) {
 			c.op4XNN(opcode)
 		case 0x5000:
 			if (opcode & consts.NMask) != 0 {
-				panic("Invalid opcode")
+				return
 			}
 			c.op5XY0(opcode)
 		case 0x8000:
 			switch opcode & 0x000F {
+			case 0x0:
+				c.op8XY0(opcode)
 			case 0x1:
 				c.op8XY1(opcode)
 			case 0x2:
@@ -137,16 +138,16 @@ func (c *Chip8) Execute(opcode uint16) {
 				c.op8XY4(opcode)
 			case 0x5:
 				c.op8XY5(opcode)
-			case 0x7:
-				c.op8XY7(opcode)
 			case 0x6:
 				c.op8XY6(opcode)
+			case 0x7:
+				c.op8XY7(opcode)
 			case 0xE:
 				c.op8XYE(opcode)
 			}
 		case 0x9000:
 			if (opcode & consts.NMask) != 0 {
-				panic("Invalid opcode")
+				return
 			}
 			c.op9XY0(opcode)
 		case 0x2000:
@@ -161,14 +162,16 @@ func (c *Chip8) Execute(opcode uint16) {
 			c.opBNNN(opcode)
 		case 0xF000:
 			switch opcode & 0x00FF {
-			case 0x1E:
-				c.opFX1E(opcode)
 			case 0x07:
 				c.opFX07(opcode)
+			case 0x0A:
+				c.opFX0A(opcode)
 			case 0x15:
 				c.opFX15(opcode)
 			case 0x18:
 				c.opFX18(opcode)
+			case 0x1E:
+				c.opFX1E(opcode)
 			case 0x29:
 				c.opFX29(opcode)
 			case 0x33:
@@ -177,8 +180,6 @@ func (c *Chip8) Execute(opcode uint16) {
 				c.opFX55(opcode)
 			case 0x65:
 				c.opFX65(opcode)
-			case 0x0A:
-				c.opFX0A(opcode)
 			}
 		case 0xE000:
 			switch opcode & 0x00FF {
@@ -193,9 +194,14 @@ func (c *Chip8) Execute(opcode uint16) {
 
 // 00E0 - CLS - Clear screen
 func (c *Chip8) op00E0() {
-	for i := range c.Screen {
-		c.Screen[i] = false
-	}
+	// Reset the array to clear screen
+	c.Screen = [consts.DisplaySize]bool{}
+}
+
+// 00EE - RET - Return from subroutine
+func (c *Chip8) op00EE() {
+	c.SP--
+	c.PC = c.Stack[c.SP]
 }
 
 // 1NNN - JP addr - Jump to address NNN
@@ -204,24 +210,12 @@ func (c *Chip8) op1NNN(opcode uint16) {
 	c.PC = address
 }
 
-// 6XNN - LD Vx, byte - Load Vx with NN
-func (c *Chip8) op6XNN(opcode uint16) {
-	// get the register
-	x := (opcode & consts.XMask) >> 8
-	// get the value
-	nn := opcode & consts.NNask
-	// load the value into the register
-	c.V[x] = byte(nn)
-}
-
-// 7XNN - ADD Vx, byte - Add NN to Vx
-func (c *Chip8) op7XNN(opcode uint16) {
-	// get the register
-	x := (opcode & consts.XMask) >> 8
-	// get the value
-	nn := opcode & consts.NNask
-	// add the value to the register
-	c.V[x] += byte(nn)
+// 2NNN - CALL addr - Call subroutine at NNN
+func (c *Chip8) op2NNN(opcode uint16) {
+	address := opcode & consts.NNNMask
+	c.Stack[c.SP] = c.PC
+	c.SP++
+	c.PC = address
 }
 
 // 3XNN - SE Vx, byte - Skip next instruction if Vx = NN
@@ -251,142 +245,25 @@ func (c *Chip8) op5XY0(opcode uint16) {
 	}
 }
 
-// 9XY0 - SNE Vx, Vy - Skip next instruction if Vx != Vy
-func (c *Chip8) op9XY0(opcode uint16) {
+// 6XNN - LD Vx, byte - Load Vx with NN
+func (c *Chip8) op6XNN(opcode uint16) {
+	x := (opcode & consts.XMask) >> 8
+	nn := opcode & consts.NNask
+	c.V[x] = byte(nn)
+}
+
+// 7XNN - ADD Vx, byte - Add NN to Vx
+func (c *Chip8) op7XNN(opcode uint16) {
+	x := (opcode & consts.XMask) >> 8
+	nn := opcode & consts.NNask
+	c.V[x] += byte(nn)
+}
+
+// 8XY0 - LD Vx, Vy - Set Vx = Vy
+func (c *Chip8) op8XY0(opcode uint16) {
 	x := (opcode & consts.XMask) >> 8
 	y := (opcode & consts.YMask) >> 4
-	if c.V[x] != c.V[y] {
-		c.PC += 2
-	}
-}
-
-// 2NNN - CALL addr - Call subroutine at NNN
-func (c *Chip8) op2NNN(opcode uint16) {
-	address := opcode & consts.NNNMask
-	// push the current PC to the stack
-	c.Stack[c.SP] = c.PC
-	// increment the stack pointer
-	c.SP++
-	// set the PC to the address
-	c.PC = address
-}
-
-// 00EE - RET - Return from subroutine
-func (c *Chip8) op00EE() {
-	// decrement the stack pointer
-	c.SP--
-	// set the PC to the address in the stack
-	c.PC = c.Stack[c.SP]
-}
-
-// ANNN - LD I, addr - Load I with NNN
-func (c *Chip8) opANNN(opcode uint16) {
-	addr := opcode & consts.NNNMask
-	c.I = addr
-}
-
-// DXYN - DRW Vx, Vy, N - Draw sprite at Vx, Vy with N rows
-func (c *Chip8) opDXYN(opcode uint16) {
-	// get the registers
-	x := c.V[(opcode&consts.XMask)>>8]
-	y := c.V[(opcode&consts.YMask)>>4]
-	// get the number of rows
-	n := opcode & consts.NMask
-
-	c.V[0xF] = 0 // VF = 0 (without colision)
-
-	for row := range n {
-		// get the sprite byte
-		spriteByte := c.Memory[c.I+row]
-		for col := range uint16(8) {
-			// calculate the pixel coordinates
-			pixelX := (uint16(x) + col) % consts.DisplayWidth
-			pixelY := (uint16(y) + row) % consts.DisplayHeight
-			idx := pixelY*consts.DisplayWidth + pixelX
-
-			// get the sprite bit
-			spriteBit := (spriteByte >> (7 - col)) & 1
-			if spriteBit == 1 {
-				// check if the pixel is already on
-				if c.Screen[idx] {
-					// VF = 1 (colision happened)
-					c.V[0xF] = 1
-				}
-				// toggle the pixel
-				c.Screen[idx] = !c.Screen[idx]
-			}
-		}
-	}
-}
-
-// CXNN - RND Vx, byte - Generate random number and AND with NN
-func (c *Chip8) opCXNN(opcode uint16) {
-	x := (opcode & consts.XMask) >> 8
-	nn := byte(opcode & 0x00FF)
-
-	random := byte(rand.Intn(256)) // 0x00–0xFF
-	c.V[x] = random & nn
-}
-
-// FX1E - ADD I, Vx - Add Vx to I
-func (c *Chip8) opFX1E(opcode uint16) {
-	x := (opcode & consts.XMask) >> 8
-
-	c.I += uint16(c.V[x])
-}
-
-// FX07 - LD Vx, DT - Load Vx with DT
-func (c *Chip8) opFX07(opcode uint16) {
-	x := (opcode & consts.XMask) >> 8
-	c.V[x] = c.DT
-}
-
-// FX15 - LD DT, Vx - Load DT with Vx
-func (c *Chip8) opFX15(opcode uint16) {
-	x := (opcode & consts.XMask) >> 8
-	c.DT = c.V[x]
-}
-
-// FX18 - LD ST, Vx - Load ST with Vx
-func (c *Chip8) opFX18(opcode uint16) {
-	x := (opcode & consts.XMask) >> 8
-	c.ST = c.V[x]
-}
-
-// FX29 - LD F, Vx - Set I with Vx sprite
-func (c *Chip8) opFX29(opcode uint16) {
-	x := (opcode & consts.XMask) >> 8
-	digit := c.V[x] & 0x0F
-
-	c.I = uint16(digit) * 5
-}
-
-// FX33 - LD B, Vx - Store BCD representation of Vx in memory
-func (c *Chip8) opFX33(opcode uint16) {
-	x := (opcode & consts.XMask) >> 8
-	val := c.V[x]
-
-	c.Memory[c.I] = val / 100
-	c.Memory[c.I+1] = (val / 10) % 10
-	c.Memory[c.I+2] = val % 10
-}
-
-// FX55 - LD [I], Vx - Store registers V0 to Vx in memory
-func (c *Chip8) opFX55(opcode uint16) {
-	x := (opcode & consts.XMask) >> 8
-
-	for i := uint16(0); i <= x; i++ {
-		c.Memory[c.I+i] = c.V[i]
-	}
-}
-
-// FX65 - LD Vx, [I] - Read registers V0 to Vx from memory
-func (c *Chip8) opFX65(opcode uint16) {
-	x := (opcode & 0x0F00) >> 8
-
-	for i := uint16(0); i <= x; i++ {
-		c.V[i] = c.Memory[c.I+i]
-	}
+	c.V[x] = c.V[y]
 }
 
 // 8XY1 - OR Vx, Vy - Set Vx = Vx OR Vy
@@ -414,63 +291,66 @@ func (c *Chip8) op8XY3(opcode uint16) {
 func (c *Chip8) op8XY4(opcode uint16) {
 	x := (opcode & consts.XMask) >> 8
 	y := (opcode & consts.YMask) >> 4
-
 	sum := uint16(c.V[x]) + uint16(c.V[y])
-	c.V[0xF] = 0 // reset carry
-
-	if sum > 0xFF { // if overflow
-		c.V[0xF] = 1 // add to carry
+	if sum > 0xFF {
+		c.V[0xF] = 1
+	} else {
+		c.V[0xF] = 0
 	}
-
-	c.V[x] = byte(sum & 0xFF)
+	c.V[x] = byte(sum)
 }
 
-// 8XY5 - SUB Vx, Vy - Set Vx = Vx - Vy, set VF = borrow
+// 8XY5 - SUB Vx, Vy - Set Vx = Vx - Vy, set VF = NOT borrow
 func (c *Chip8) op8XY5(opcode uint16) {
-	x := (opcode & 0x0F00) >> 8
-	y := (opcode & 0x00F0) >> 4
-
-	// "fake" ternary
-	// c.V[0xF] = map[bool]uint8{true: 1, false: 0}[c.V[x] >= c.V[y]]
-
+	x := (opcode & consts.XMask) >> 8
+	y := (opcode & consts.YMask) >> 4
 	if c.V[x] >= c.V[y] {
 		c.V[0xF] = 1
 	} else {
 		c.V[0xF] = 0
 	}
-
-	c.V[x] = c.V[x] - c.V[y]
+	c.V[x] -= c.V[y]
 }
 
-// 8XY7 - SUB Vx, Vy - Set Vx = Vy - Vx, set VF = borrow
+// 8XY6 - SHR Vx {, Vy} - Set Vx = Vx >> 1, set VF = LSB
+func (c *Chip8) op8XY6(opcode uint16) {
+	x := (opcode & consts.XMask) >> 8
+	c.V[0xF] = c.V[x] & 0x1
+	c.V[x] >>= 1
+}
+
+// 8XY7 - SUBN Vx, Vy - Set Vx = Vy - Vx, set VF = NOT borrow
 func (c *Chip8) op8XY7(opcode uint16) {
 	x := (opcode & consts.XMask) >> 8
 	y := (opcode & consts.YMask) >> 4
-
 	if c.V[y] >= c.V[x] {
 		c.V[0xF] = 1
 	} else {
 		c.V[0xF] = 0
 	}
-
 	c.V[x] = c.V[y] - c.V[x]
 }
 
-// 8XY6 - SHR Vx - Set Vx = Vx >> 1, set VF = LSB
-func (c *Chip8) op8XY6(opcode uint16) {
-	x := (opcode & consts.XMask) >> 8
-
-	// LSB = lower significant bit
-	c.V[0xF] = c.V[x] & 0x1 // LSB before shift
-	c.V[x] >>= 1
-}
-
-// 8XYE - SHL Vx - Set Vx = Vx << 1, set VF = MSB
+// 8XYE - SHL Vx {, Vy} - Set Vx = Vx << 1, set VF = MSB
 func (c *Chip8) op8XYE(opcode uint16) {
 	x := (opcode & consts.XMask) >> 8
-
-	c.V[0xF] = (c.V[x] & 0x80) >> 7 // MSB before shift
+	c.V[0xF] = (c.V[x] & 0x80) >> 7
 	c.V[x] <<= 1
+}
+
+// 9XY0 - SNE Vx, Vy - Skip next instruction if Vx != Vy
+func (c *Chip8) op9XY0(opcode uint16) {
+	x := (opcode & consts.XMask) >> 8
+	y := (opcode & consts.YMask) >> 4
+	if c.V[x] != c.V[y] {
+		c.PC += 2
+	}
+}
+
+// ANNN - LD I, addr - Load I with NNN
+func (c *Chip8) opANNN(opcode uint16) {
+	addr := opcode & consts.NNNMask
+	c.I = addr
 }
 
 // BNNN - JP V0, addr - jump to NNN + V0
@@ -479,52 +359,127 @@ func (c *Chip8) opBNNN(opcode uint16) {
 	c.PC = addr + uint16(c.V[0])
 }
 
+// CXNN - RND Vx, byte - Generate random number and AND with NN
+func (c *Chip8) opCXNN(opcode uint16) {
+	x := (opcode & consts.XMask) >> 8
+	nn := byte(opcode & consts.NNask)
+	random := byte(rand.Intn(256))
+	c.V[x] = random & nn
+}
+
+// DXYN - DRW Vx, Vy, N - Draw sprite at Vx, Vy with N rows
+func (c *Chip8) opDXYN(opcode uint16) {
+	x := (opcode & consts.XMask) >> 8
+	y := (opcode & consts.YMask) >> 4
+	n := opcode & consts.NMask
+
+	vx := uint16(c.V[x])
+	vy := uint16(c.V[y])
+	c.V[0xF] = 0 // VF = 0 (without collision)
+
+	// loop from 0 to n-1
+	for row := uint16(0); row < n; row++ {
+		spriteByte := c.Memory[c.I+row]
+		pixelY := (vy + row) % consts.DisplayHeight
+
+		// loop from 0 to 7
+		for col := uint16(0); col < 8; col++ {
+			spritePixel := (spriteByte >> (7 - col)) & 1
+			if spritePixel == 1 {
+				pixelX := (vx + col) % consts.DisplayWidth
+				idx := pixelY*consts.DisplayWidth + pixelX
+
+				if c.Screen[idx] {
+					c.V[0xF] = 1 // VF = 1 (collision happened)
+				}
+				c.Screen[idx] = !c.Screen[idx] // toggle the pixel (XOR)
+			}
+		}
+	}
+}
+
 // EX9E - SKP Vx - skip next instruction if Vx is pressed
 func (c *Chip8) opEX9E(opcode uint16) {
 	x := (opcode & consts.XMask) >> 8
 	key := c.V[x] & 0x0F
-
 	if c.Keys[key] {
 		c.PC += 2
 	}
 }
 
-// EX9E - SKP Vx - skip next instruction if Vx is not pressed
+// EXA1 - SKNP Vx - skip next instruction if Vx is not pressed
 func (c *Chip8) opEXA1(opcode uint16) {
 	x := (opcode & consts.XMask) >> 8
 	key := c.V[x] & 0x0F
-
 	if !c.Keys[key] {
 		c.PC += 2
 	}
 }
 
-// FX0A - LD Vx, K - pause executation until key pressed
-func (c *Chip8) opFX0A(opcode uint16) {
+// FX07 - LD Vx, DT - Load Vx with DT
+func (c *Chip8) opFX07(opcode uint16) {
 	x := (opcode & consts.XMask) >> 8
-
-	c.WaitingForKey = true
-	c.WaitingReg = uint8(x)
+	c.V[x] = c.DT
 }
 
-// Event Loop
-func (c *Chip8) EventLoop() {
-	const fps = 60
-	ticker := time.NewTicker(time.Second / fps)
-	defer ticker.Stop()
-	for range ticker.C {
-		// handleInput(c)
-		c.Tick()
-		c.UpdateTimers()
+// FX0A - LD Vx, K - pause execution until key pressed
+func (c *Chip8) opFX0A(opcode uint16) {
+	x := (opcode & consts.XMask) >> 8
+	c.WaitingForKey = true
+	c.WaitingReg = byte(x)
+}
 
-		if c.ST > 0 {
-			fmt.Printf("BEEEEP")
-		}
+// FX15 - LD DT, Vx - Load DT with Vx
+func (c *Chip8) opFX15(opcode uint16) {
+	x := (opcode & consts.XMask) >> 8
+	c.DT = c.V[x]
+}
 
-		c.DebugScreen()
+// FX18 - LD ST, Vx - Load ST with Vx
+func (c *Chip8) opFX18(opcode uint16) {
+	x := (opcode & consts.XMask) >> 8
+	c.ST = c.V[x]
+}
+
+// FX1E - ADD I, Vx - Add Vx to I
+func (c *Chip8) opFX1E(opcode uint16) {
+	x := (opcode & consts.XMask) >> 8
+	c.I += uint16(c.V[x])
+}
+
+// FX29 - LD F, Vx - Set I to the location of the sprite for the character in Vx
+func (c *Chip8) opFX29(opcode uint16) {
+	x := (opcode & consts.XMask) >> 8
+	digit := c.V[x] & 0x0F
+	c.I = consts.FontStartAddress + (uint16(digit) * 5)
+}
+
+// FX33 - LD B, Vx - Store BCD representation of Vx in memory
+func (c *Chip8) opFX33(opcode uint16) {
+	x := (opcode & consts.XMask) >> 8
+	val := c.V[x]
+	c.Memory[c.I] = val / 100
+	c.Memory[c.I+1] = (val / 10) % 10
+	c.Memory[c.I+2] = val % 10
+}
+
+// FX55 - LD [I], Vx - Store registers V0 to Vx in memory
+func (c *Chip8) opFX55(opcode uint16) {
+	x := (opcode & consts.XMask) >> 8
+	for i := uint16(0); i <= x; i++ {
+		c.Memory[c.I+i] = c.V[i]
 	}
 }
 
+// FX65 - LD Vx, [I] - Read registers V0 to Vx from memory
+func (c *Chip8) opFX65(opcode uint16) {
+	x := (opcode & consts.XMask) >> 8
+	for i := uint16(0); i <= x; i++ {
+		c.V[i] = c.Memory[c.I+i]
+	}
+}
+
+// UpdateTimers decrements the delay and sound timers.
 func (c *Chip8) UpdateTimers() {
 	if c.DT > 0 {
 		c.DT--
@@ -532,5 +487,30 @@ func (c *Chip8) UpdateTimers() {
 	if c.ST > 0 {
 		c.ST--
 	}
+}
 
+// EventLoop is the main emulator loop.
+func (c *Chip8) EventLoop() {
+	// A typical Chip-8 CPU speed is around 500-700Hz.
+	// Screen and timers update at 60Hz.
+	// We use separate tickers to manage this timing.
+	cpuTicker := time.NewTicker(time.Second / 700) // ~700 cycles per second
+	defer cpuTicker.Stop()
+
+	timerTicker := time.NewTicker(time.Second / 60) // 60Hz for timers and screen
+	defer timerTicker.Stop()
+
+	for {
+		select {
+		case <-cpuTicker.C:
+			// handleInput(c) // TODO: add input handler method [@breno5g]
+			c.Tick()
+		case <-timerTicker.C:
+			c.UpdateTimers()
+			c.DebugScreen()
+			if c.ST > 0 {
+				fmt.Print("\a")
+			}
+		}
+	}
 }
