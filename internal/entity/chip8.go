@@ -32,6 +32,7 @@ func NewChip8() *Chip8 {
 		WaitingReg:    0,
 	}
 	c.LoadFontSet()
+	rand.Seed(time.Now().UnixNano())
 	return c
 }
 
@@ -74,6 +75,15 @@ func (c *Chip8) LoadROM(data []byte) {
 
 // Fetch reads the 2-byte opcode from memory at the PC and advances the PC.
 func (c *Chip8) Fetch() uint16 {
+	// Garante que o PC não ultrapasse os limites da memória.
+	if c.PC+1 >= consts.MemorySize {
+		// Ação de erro, como pausar ou parar o emulador.
+		// Por simplicidade, vamos apenas logar e parar.
+		fmt.Printf("Erro: PC (0x%X) fora dos limites da memória.\n", c.PC)
+		// Para evitar pânico, podemos entrar em um loop infinito ou definir um estado de erro.
+		// Aqui, vamos apenas retornar um opcode NOP (0x0000) para evitar crash.
+		return 0x0000
+	}
 	high := uint16(c.Memory[c.PC])
 	low := uint16(c.Memory[c.PC+1])
 	opcode := (high << 8) | low
@@ -90,7 +100,6 @@ func (c *Chip8) Tick() {
 			if pressed {
 				c.V[c.WaitingReg] = byte(key)
 				c.WaitingForKey = false
-				c.PC += 2
 				break
 			}
 		}
@@ -489,28 +498,28 @@ func (c *Chip8) UpdateTimers() {
 	}
 }
 
-// EventLoop is the main emulator loop.
-func (c *Chip8) EventLoop() {
-	// A typical Chip-8 CPU speed is around 500-700Hz.
-	// Screen and timers update at 60Hz.
-	// We use separate tickers to manage this timing.
-	cpuTicker := time.NewTicker(time.Second / 700) // ~700 cycles per second
-	defer cpuTicker.Stop()
+// // EventLoop is the main emulator loop.
+// func (c *Chip8) EventLoop() {
+// 	// A typical Chip-8 CPU speed is around 500-700Hz.
+// 	// Screen and timers update at 60Hz.
+// 	// We use separate tickers to manage this timing.
+// 	cpuTicker := time.NewTicker(time.Second / 700) // ~700 cycles per second
+// 	defer cpuTicker.Stop()
 
-	timerTicker := time.NewTicker(time.Second / 60) // 60Hz for timers and screen
-	defer timerTicker.Stop()
+// 	timerTicker := time.NewTicker(time.Second / 60) // 60Hz for timers and screen
+// 	defer timerTicker.Stop()
 
-	for {
-		select {
-		case <-cpuTicker.C:
-			// handleInput(c) // TODO: add input handler method [@breno5g]
-			c.Tick()
-		case <-timerTicker.C:
-			c.UpdateTimers()
-			c.DebugScreen()
-			if c.ST > 0 {
-				fmt.Print("\a")
-			}
-		}
-	}
-}
+// 	for {
+// 		select {
+// 		case <-cpuTicker.C:
+// 			// handleInput(c) // TODO: add input handler method [@breno5g]
+// 			c.Tick()
+// 		case <-timerTicker.C:
+// 			c.UpdateTimers()
+// 			c.DebugScreen()
+// 			if c.ST > 0 {
+// 				fmt.Print("\a")
+// 			}
+// 		}
+// 	}
+// }
