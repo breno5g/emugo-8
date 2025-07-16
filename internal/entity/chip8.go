@@ -3,6 +3,7 @@ package entity
 import (
 	"fmt"
 	"math/rand"
+	"strings"
 	"time"
 
 	"github.com/breno5g/emugo-8/internal/consts"
@@ -42,19 +43,22 @@ func (c *Chip8) LoadFontSet() {
 }
 
 func (c *Chip8) DebugScreen() {
-	fmt.Print("\033[H")
+	var screen strings.Builder
+	screen.Grow(consts.DisplaySize + consts.DisplayHeight)
+
+	screen.WriteString("\033[H")
+
 	for y := range consts.DisplayHeight {
 		for x := range consts.DisplayWidth {
 			if c.Screen[y*consts.DisplayWidth+x] {
-				fmt.Print("⬛")
-				// fmt.Print("█")
+				screen.WriteString("⬛")
 			} else {
-				fmt.Print("⬜")
-				// fmt.Print(" ")
+				screen.WriteString("⬜")
 			}
 		}
-		fmt.Println()
+		screen.WriteString("\n")
 	}
+	fmt.Print(screen.String())
 }
 
 func (c *Chip8) LoadROM(data []byte) {
